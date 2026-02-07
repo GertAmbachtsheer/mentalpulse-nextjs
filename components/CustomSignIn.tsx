@@ -35,7 +35,6 @@ export default function CustomSignIn() {
           session: signInAttempt.createdSessionId,
           navigate: async ({ session }) => {
             if (session?.currentTask) {
-              console.log(session?.currentTask);
               return;
             }
             router.push("/");
@@ -88,7 +87,6 @@ export default function CustomSignIn() {
           session: signInAttempt.createdSessionId,
           navigate: async ({ session }) => {
             if (session?.currentTask) {
-              console.log(session?.currentTask);
               return;
             }
             router.push("/");

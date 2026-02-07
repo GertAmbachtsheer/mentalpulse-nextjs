@@ -3,6 +3,11 @@
 import * as React from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
 
 export default function CustomUserButton() {
   const { user } = useUser();
@@ -34,7 +39,7 @@ export default function CustomUserButton() {
   };
 
   if (!user) return null;
-console.log(user.id)
+
   // Get user initials for avatar
   const getInitials = () => {
     const firstName = user.firstName || "";
@@ -55,22 +60,15 @@ console.log(user.id)
   return (
     <div className="relative" ref={dropdownRef}>
       {/* User Avatar Button */}
-      <button
+      <Avatar
         onClick={() => setIsOpen(!isOpen)}
-        className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         aria-label="User menu"
         aria-expanded={isOpen}
+        className="w-10 h-10 rounded-full bg-gradient from-primary to-primary/60 text-primary-foreground font-semibold flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
       >
-        {user.imageUrl ? (
-          <img
-            src={user.imageUrl}
-            alt={displayName}
-            className="w-full h-full rounded-full object-cover"
-          />
-        ) : (
-          <span className="text-sm">{getInitials()}</span>
-        )}
-      </button>
+        <AvatarImage src="" alt={displayName} />
+        <AvatarFallback>{getInitials()}</AvatarFallback>
+      </Avatar>
 
       {/* Dropdown Menu */}
       {isOpen && (
@@ -78,17 +76,12 @@ console.log(user.id)
           {/* User Info Section */}
           <div className="p-4 border-b border-border/50 bg-gradient-to-br from-primary/5 to-transparent">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold flex items-center justify-center shadow-md flex-shrink-0">
-                {user.imageUrl ? (
-                  <img
-                    src={user.imageUrl}
-                    alt={displayName}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                ) : (
-                  <span>{getInitials()}</span>
-                )}
-              </div>
+              <Avatar
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold flex items-center justify-center shadow-md flex-shrink-0"
+              >
+                <AvatarImage src="" alt={displayName} />
+                <AvatarFallback>{getInitials()}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground truncate">
                   {displayName}
@@ -106,8 +99,7 @@ console.log(user.id)
             <button
               onClick={() => {
                 setIsOpen(false);
-                // You can add navigation to profile/settings page here
-                // router.push("/profile");
+                router.push("/account/profile");
               }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-accent/50 transition-colors duration-200 text-left group"
             >

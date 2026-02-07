@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Providers from '@/components/Providers';
 
@@ -8,13 +8,8 @@ const APP_DEFAULT_TITLE = "Mental Pulse";
 const APP_TITLE_TEMPLATE = "%s - Mental Pulse";
 const APP_DESCRIPTION = "Best Mental Health app in the world!";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
 });
 
@@ -22,7 +17,7 @@ export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: "Mental Pulse",
   description: "Mental Pulse - Your Mental Health Companion",
-  manifest: "/manifest.json",
+  // manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -61,7 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#EEF2FF]`}>
+      <body className={`${montserrat.variable} antialiased bg-[#EEF2FF]`}>
         <Providers>{children}</Providers>
       </body>
     </html>
