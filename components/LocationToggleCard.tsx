@@ -96,6 +96,17 @@ export default function LocationToggleCard() {
 
   const handleToggleLocation = () => {
     setIsLocationEnabled(!isLocationEnabled);
+    if (!isLocationEnabled) {
+      setTimeout(() => {
+        navigator.geolocation.getCurrentPosition((position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+          })
+        })
+      }, 200);
+    }
   };
 
   const handleStartTracking = () => {
