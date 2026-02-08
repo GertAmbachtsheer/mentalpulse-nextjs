@@ -60,23 +60,23 @@ export default function MoodTracker() {
       <h2 className="text-2xl font-semibold text-center mb-6">How are you feeling today?</h2>
       <div className="flex justify-around">
         <button value="Great" className="rounded-full" onClick={() => selectMood("Great")}>
-          <FaRegFaceSmileBeam className={`w-20 h-20 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Great" ? "text-green-500" : "text-gray-500 hover:text-green-500"}`} />
+          <FaRegFaceSmileBeam className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Great" ? "text-green-500" : "text-gray-500 hover:text-green-500"}`} />
           <span className="text-sm font-medium">Great</span>
         </button>
         <button value="Good" className="rounded-full" onClick={() => selectMood("Good")}>
-          <FaRegFaceGrin className={`w-20 h-20 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Good" ? "text-lime-600" : "text-gray-500 hover:text-lime-600"}`} />
+          <FaRegFaceGrin className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Good" ? "text-lime-600" : "text-gray-500 hover:text-lime-600"}`} />
           <span className="text-sm font-medium">Good</span>
         </button>
         <button value="Neutral" className="rounded-full" onClick={() => selectMood("Neutral")}>
-          <FaRegFaceMeh className={`w-20 h-20 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Neutral" ? "text-yellow-500" : "text-gray-500 hover:text-yellow-500"}`} />
+          <FaRegFaceMeh className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Neutral" ? "text-yellow-500" : "text-gray-500 hover:text-yellow-500"}`} />
           <span className="text-sm font-medium">Neutral</span>
         </button>
         <button value="Bad" className="rounded-full" onClick={() => selectMood("Bad")}>
-          <FaRegFaceFrownOpen className={`w-20 h-20 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Bad" ? "text-orange-500" : "text-gray-500 hover:text-orange-500"}`} />
+          <FaRegFaceFrownOpen className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Bad" ? "text-orange-500" : "text-gray-500 hover:text-orange-500"}`} />
           <span className="text-sm font-medium">Bad</span>
         </button>
         <button value="Terrible" className="rounded-full" onClick={() => selectMood("Terrible")}>
-          <FaRegFaceFrown className={`w-20 h-20 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Terrible" ? "text-red-500" : "text-gray-500 hover:text-red-500"}`} />
+          <FaRegFaceFrown className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Terrible" ? "text-red-500" : "text-gray-500 hover:text-red-500"}`} />
           <span className="text-sm font-medium">Terrible</span>
         </button>
       </div>

@@ -11,7 +11,7 @@ import { useUser } from "@clerk/nextjs";
 import { locationsApi } from "@/lib/convexCalls";
 import { useMutation, useQuery } from "convex/react";
 
-export default function LocationToggleCard() {
+export default function ProfileLocationToggleCard() {
   const { user } = useUser();
   const [isLocationEnabled, setIsLocationEnabled] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
@@ -162,7 +162,7 @@ export default function LocationToggleCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <span>Location Services</span>
-          {isLocationEnabled && isTracking && <Badge variant="default">Active</Badge>}
+          {isLocationEnabled && isTracking ? <Badge variant="default">Active</Badge> : <Badge variant="destructive">Inactive</Badge>}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

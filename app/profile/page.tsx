@@ -4,7 +4,7 @@ import AuthToggle from "@/components/AuthToggle";
 import CustomUserButton from "@/components/CustomUserButton";
 import { Suspense } from "react";
 import Loading from "../loading";
-import LocationToggleCard from "@/components/ProfileLocationToggleCard";
+import ProfileLocationToggleCard from "@/components/ProfileLocationToggleCard";
 import { Toaster } from "@/components/ui/sonner";
 import { useUser } from "@clerk/nextjs";
 import { ProfileMoodChart } from "@/components/ProfileMoodChart";
@@ -28,7 +28,7 @@ export default function Profile() {
               <h2 className="text-lg font-semibold">{user?.fullName}</h2>
             </div>
           </nav>
-          <LocationToggleCard />
+          <ProfileLocationToggleCard />
           <ProfileMoodChart />
           <Toaster />
         </Authenticated>

@@ -146,7 +146,7 @@ export default function LocationToggleCard() {
       >
         <AccordionItem value="location">
           <AccordionTrigger><div className="flex items-center gap-2">Location Services 
-            {isLocationEnabled && isTracking && <Badge variant="default">Active</Badge>}</div></AccordionTrigger>
+            {isLocationEnabled && isTracking ? <Badge variant="default">Active</Badge> : <Badge variant="destructive">Inactive</Badge>}</div></AccordionTrigger>
           <AccordionContent>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
