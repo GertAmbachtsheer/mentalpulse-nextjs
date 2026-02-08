@@ -1,6 +1,6 @@
 "use client";
 
-import { moodsApi } from "@/lib/moods";
+import { moodsApi } from "@/lib/convexCalls";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
 import { FaRegFaceSmileBeam, FaRegFaceGrin, FaRegFaceMeh, FaRegFaceFrownOpen, FaRegFaceFrown  } from "react-icons/fa6";

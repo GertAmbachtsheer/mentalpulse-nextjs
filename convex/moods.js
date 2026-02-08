@@ -41,7 +41,6 @@ export const upsertMood = mutation({
         .first();
       
       await ctx.db.replace(existing._id, {
-        userId: args.userId,
         mood: args.mood,
       });
       return existing._id;

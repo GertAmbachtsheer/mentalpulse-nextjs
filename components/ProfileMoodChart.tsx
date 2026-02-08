@@ -1,5 +1,5 @@
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
-import { moodsApi } from "@/lib/moods";
+import { moodsApi } from "@/lib/convexCalls";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
 import { format, fromUnixTime } from "date-fns";

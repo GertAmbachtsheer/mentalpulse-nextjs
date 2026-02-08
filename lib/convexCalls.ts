@@ -7,3 +7,8 @@ export const moodsApi = {
   getRecentUserMood: api.moods.getRecentUserMood,
   upsertMood: api.moods.upsertMood,
 };
+
+export const locationsApi = {
+  getUserLocation: api.locations.getUserLocation,
+  upsertLocation: api.locations.upsertLocation,
+};

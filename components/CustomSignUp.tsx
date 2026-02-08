@@ -89,7 +89,7 @@ export default function CustomSignUp() {
   // Display email verification form
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 max-w-[600px] w-full mx-auto">
         <div className="w-full max-w-md">
           <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
@@ -189,7 +189,7 @@ export default function CustomSignUp() {
 
   // Display sign-up form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 max-w-[600px] w-full mx-auto">
       <div className="w-full max-w-md">
         <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Header */}
