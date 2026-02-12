@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -139,7 +139,7 @@ export default function LocationToggleCard() {
   };
 
   return (
-    <Card className="mx-4 mt-6 mb-3 bg-white rounded-xl px-6 py-2 shadow-sm border border-border/80">
+    <Card className="mx-2 mt-2 mb-1 bg-white rounded-xl px-6 py-2 shadow-sm border border-border/80">
       <Accordion
         type="single"
         collapsible

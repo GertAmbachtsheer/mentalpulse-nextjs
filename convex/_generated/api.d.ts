@@ -10,6 +10,7 @@
 
 import type * as locations from "../locations.js";
 import type * as moods from "../moods.js";
+import type * as support from "../support.js";
 
 import type {
   ApiFromModules,
@@ -20,6 +21,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   locations: typeof locations;
   moods: typeof moods;
+  support: typeof support;
 }>;
 
 /**

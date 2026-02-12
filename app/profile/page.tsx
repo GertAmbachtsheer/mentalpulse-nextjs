@@ -16,7 +16,7 @@ export default function Profile() {
   
   return (
     <Suspense fallback={<Loading />}>
-      <div className="min-h-screen bg-gray-100 flex flex-col h-screen max-w-[600px] w-full mx-auto">
+      <div className="min-h-screen bg-gray-100 flex flex-col h-screen max-w-150 w-full mx-auto">
         <Authenticated>
           <nav className="flex flex-col w-full border-b border-border/80 shadow-sm bg-white rounded-b-xl">
             <div className="flex w-full h-16 p-4 justify-between items-center border-b border-border/80">

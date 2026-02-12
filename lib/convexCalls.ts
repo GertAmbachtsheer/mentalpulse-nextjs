@@ -12,3 +12,7 @@ export const locationsApi = {
   getUserLocation: api.locations.getUserLocation,
   upsertLocation: api.locations.upsertLocation,
 };
+
+export const supportApi = {
+  getSupport: api.support.getSupport,
+};

@@ -129,3 +129,8 @@
     @apply hidden!;
   }
 }
+
+ul {
+  list-style-type: disc;
+  margin-left: 1.3rem;
+}

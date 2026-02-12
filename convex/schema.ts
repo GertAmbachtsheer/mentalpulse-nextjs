@@ -11,4 +11,12 @@ export default defineSchema({
     mood: v.string(),
     userId: v.string(),
   }).index("by_userId", { fields: ["userId"] }),
+  support: defineTable({
+    title: v.string(),
+    description: v.string(),
+    benefits: v.string(),
+    price: v.string(),
+    sortOrder: v.number(),
+    type: v.string(),
+  }).index("by_type", { fields: ["type"] }),
 });

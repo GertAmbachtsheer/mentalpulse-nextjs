@@ -56,7 +56,7 @@ export default function MoodTracker() {
   }
 
   return (
-    <section className="mx-4 mt-3 mb-3 bg-white rounded-xl p-6 shadow-sm border border-border/80">
+    <section className="mx-2 mt-1 mb-1 bg-white rounded-xl p-6 shadow-sm border border-border/80">
       <h2 className="text-2xl font-semibold text-center mb-6">How are you feeling today?</h2>
       <div className="flex justify-around">
         <button value="Great" className="rounded-full" onClick={() => selectMood("Great")}>

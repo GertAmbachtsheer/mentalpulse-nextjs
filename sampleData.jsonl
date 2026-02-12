@@ -1,1 +1,8 @@
-{"longitude": "77.2090", "latitude": "28.6139", "userId": "user_399WLYPbBVnloRZKu7v4B6aRCbW"}
+{"title": "Supporter", "description": "Help keep the lights on", "benefits": "<ul><li>Support basic server costs</li><li>Help maintain crisis hotlines</li><li>Enable new user onboarding</li></ul>", "price": "50", "sortOrder": 1, "type": "monthly"}
+{"title": "Advocate", "description": "Champion men's mental health", "benefits": "<ul><li>All Supporter benefits</li><li>Fund group moderator training</li><li>Support WhatsApp crisis line</li><li>Help expand to new regions</li></ul>", "price": "100", "sortOrder": 2, "type": "monthly"}
+{"title": "Champion", "description": "Lead the movement", "benefits": "<ul><li>All Advocate benefits</li><li>Fund professional therapist partnerships</li><li>Support 24/7 crisis response</li><li>Help develop new features</li><li>Priority support access</li></ul>", "price": "200", "sortOrder": 3, "type": "monthly"}
+{"title": "Buy the team a coffee", "description": "", "benefits": "", "price": "25", "sortOrder": 1, "type": "once-off"}
+{"title": "Fund crisis line for a day", "description": "", "benefits": "", "price": "50", "sortOrder": 2, "type": "once-off"}
+{"title": "Support a week of services", "description": "", "benefits": "", "price": "100", "sortOrder": 3, "type": "once-off"}
+{"title": "Fund professional training", "description": "", "benefits": "", "price": "250", "sortOrder": 4, "type": "once-off"}
+{"title": "Mayor platform improvement", "description": "", "benefits": "", "price": "500", "sortOrder": 5, "type": "once-off"}
