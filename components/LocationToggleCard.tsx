@@ -14,11 +14,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import PanicButton from "./PanicButton";
+import { useLocationStore } from "@/store/locationStore";
 
 export default function LocationToggleCard() {
   const { user } = useUser();
-  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-  const [isTracking, setIsTracking] = useState(false);
+  const { isLocationEnabled, isTracking, setLocationEnabled, setTracking } = useLocationStore();
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [locationPermission, setLocationPermission] = useState<string>('');
@@ -84,11 +85,6 @@ export default function LocationToggleCard() {
       return;
     }
 
-    if (locationPermission === 'granted') {
-      setIsLocationEnabled(true);
-      setIsTracking(true);
-    }
-
     if (!isLocationEnabled && locationPermission !== 'granted') {
       toast.warning("Please allow location access to enable location-based features.",{
         position: "top-center",
@@ -124,7 +120,7 @@ export default function LocationToggleCard() {
   }
 
   const handleToggleLocation = () => {
-    setIsLocationEnabled(!isLocationEnabled);
+    setLocationEnabled(!isLocationEnabled);
     if (!isLocationEnabled) {
       setTimeout(() => {
         navigator.geolocation.getCurrentPosition((position) => {
@@ -139,13 +135,15 @@ export default function LocationToggleCard() {
   };
 
   return (
+    (isLocationEnabled && isTracking) ?
+      <PanicButton /> :
     <Card className="mx-2 mt-2 mb-1 bg-white rounded-xl px-6 py-2 shadow-sm border border-border/80">
       <Accordion
         type="single"
         collapsible
       >
         <AccordionItem value="location">
-          <AccordionTrigger><div className="flex items-center gap-2">Location Services 
+          <AccordionTrigger className="no-underline hover:no-underline"><div className="flex items-center gap-2">Location Services 
             {isLocationEnabled && isTracking ? <Badge variant="default">Active</Badge> : <Badge variant="destructive">Inactive</Badge>}</div></AccordionTrigger>
           <AccordionContent>
             <CardContent className="space-y-4">

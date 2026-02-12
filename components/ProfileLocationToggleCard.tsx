@@ -10,11 +10,11 @@ import { Map, MapMarker, MarkerLabel, MarkerContent, MapRef } from "@/components
 import { useUser } from "@clerk/nextjs";
 import { locationsApi } from "@/lib/convexCalls";
 import { useMutation, useQuery } from "convex/react";
+import { useLocationStore } from "@/store/locationStore";
 
 export default function ProfileLocationToggleCard() {
   const { user } = useUser();
-  const [isLocationEnabled, setIsLocationEnabled] = useState(false);
-  const [isTracking, setIsTracking] = useState(false);
+  const { isLocationEnabled, isTracking, setLocationEnabled, setTracking } = useLocationStore();
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [locationPermission, setLocationPermission] = useState<string>('');
@@ -85,11 +85,6 @@ export default function ProfileLocationToggleCard() {
       return;
     }
 
-    if (locationPermission === 'granted') {
-      setIsLocationEnabled(true);
-      setIsTracking(true);
-    }
-
     if (!isLocationEnabled && locationPermission !== 'granted') {
       toast.warning("Please allow location access to enable location-based features.",{
         position: "top-center",
@@ -125,7 +120,7 @@ export default function ProfileLocationToggleCard() {
   }
 
   const handleToggleLocation = () => {
-    setIsLocationEnabled(!isLocationEnabled);
+    setLocationEnabled(!isLocationEnabled);
     if (!isLocationEnabled) {
       setTimeout(() => {
         navigator.geolocation.getCurrentPosition((position) => {
@@ -140,7 +135,7 @@ export default function ProfileLocationToggleCard() {
   };
 
   const handleStartTracking = () => {
-    setIsTracking(true);
+    setTracking(true);
     toast.success("Tracking Started", {
       description: "Location tracking has been enabled.",
       position: "top-center",
@@ -149,7 +144,7 @@ export default function ProfileLocationToggleCard() {
   };
 
   const handleStopTracking = () => {
-    setIsTracking(false);
+    setTracking(false);
     toast.info("Tracking Stopped", {
       description: "Location tracking has been disabled.",
       position: "top-center",

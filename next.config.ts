@@ -1,23 +1,29 @@
-// import type { NextConfig } from "next";
-// import withPWAInit  from "@ducanh2912/next-pwa";
-
-// const nextConfig: NextConfig = {
-//   /* config options here */
-// };
-
-// const pwaConfig = withPWAInit({
-//   dest: "public",
-//   register: true,
-//   disable: process.env.NODE_ENV === "development",
-// });
-
-// export default pwaConfig(nextConfig);
 import type { NextConfig } from "next";
+import withPWAInit  from "@ducanh2912/next-pwa";
 
-const NextConfig = {
-  output: 'standalone',
+const nextConfig: NextConfig = {
   /* config options here */
 };
 
-export default NextConfig;
+const pwaConfig = withPWAInit({
+  dest: "public",
+  register: true,
+  disable: process.env.NODE_ENV === "development", // Disable in dev to avoid conflicts
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  workboxOptions: {
+    disableDevLogs: true,
+  },
+});
+
+export default pwaConfig(nextConfig);
+// import type { NextConfig } from "next";
+
+// const NextConfig = {
+//   output: 'standalone',
+//   /* config options here */
+// };
+
+// export default NextConfig;
 

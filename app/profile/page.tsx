@@ -10,6 +10,7 @@ import { useUser } from "@clerk/nextjs";
 import { ProfileMoodChart } from "@/components/ProfileMoodChart";
 import Link from "next/link";
 import { IoHomeOutline } from "react-icons/io5";
+import { FaChevronRight } from "react-icons/fa6";
 
 export default function Profile() {
   const { user } = useUser();
@@ -24,7 +25,7 @@ export default function Profile() {
               <CustomUserButton />
             </div>
             <div className="flex w-full h-10 p-4 justify-between items-center">
-              <Link href="/" className="flex items-center gap-2"><IoHomeOutline className="text-lg" />Home</Link>
+              <h2 className="flex items-center gap-2"><Link href="/" className="flex items-center gap-2"><IoHomeOutline className="text-lg" /></Link><FaChevronRight className="text-sm text-muted-foreground" /><span className="text-md font-semibold text-muted-foreground">Profile</span></h2>
               <h2 className="text-lg font-semibold">{user?.fullName}</h2>
             </div>
           </nav>

@@ -16,3 +16,12 @@ export const locationsApi = {
 export const supportApi = {
   getSupport: api.support.getSupport,
 };
+
+export const panicAlertsApi = {
+  triggerPanicAlert: api.panicAlerts.triggerPanicAlert,
+  getActivePanicAlerts: api.panicAlerts.getActivePanicAlerts,
+  getNearbyUsers: api.panicAlerts.getNearbyUsers,
+  dismissPanicAlert: api.panicAlerts.dismissPanicAlert,
+  getRelevantPanicAlerts: api.panicAlerts.getRelevantPanicAlerts,
+  getUserActivePanicAlert: api.panicAlerts.getUserActivePanicAlert,
+};

@@ -10,6 +10,7 @@
 
 import type * as locations from "../locations.js";
 import type * as moods from "../moods.js";
+import type * as panicAlerts from "../panicAlerts.js";
 import type * as support from "../support.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   locations: typeof locations;
   moods: typeof moods;
+  panicAlerts: typeof panicAlerts;
   support: typeof support;
 }>;
 

@@ -19,4 +19,12 @@ export default defineSchema({
     sortOrder: v.number(),
     type: v.string(),
   }).index("by_type", { fields: ["type"] }),
+  panicAlerts: defineTable({
+    userId: v.string(),
+    latitude: v.string(),
+    longitude: v.string(),
+    timestamp: v.number(),
+    active: v.boolean(),
+  }).index("by_active", { fields: ["active"] })
+    .index("by_userId", { fields: ["userId"] }),
 });
