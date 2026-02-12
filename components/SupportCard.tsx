@@ -95,9 +95,9 @@ export default function SupportCard() {
         <div className="flex justify-center mt-6">
           <button className="w-full bg-lime-500 text-white font-semibold py-2 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer transition-200">Support</button>
         </div>
-        <div className="flex justify-center mt-6 gap-2">
+        <div className="flex flex-col justify-center mt-6 gap-1">
           <p className="flex items-center gap-1 text-sm text-muted-foreground"><RiSecurePaymentLine />Secure payments</p>
-          <p className="flex items-center gap-1 text-sm text-muted-foreground border-r border-l border-gray-300 px-2"><LuUsers />Community funded</p>
+          <p className="flex items-center gap-1 text-sm text-muted-foreground"><LuUsers />Community funded</p>
           <p className="flex items-center gap-1 text-sm text-muted-foreground"><FaRegHeart />100% for mental health</p>
         </div>
       </div>
