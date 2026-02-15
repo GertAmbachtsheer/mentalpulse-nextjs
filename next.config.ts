@@ -14,6 +14,9 @@ const pwaConfig = withPWAInit({
   reloadOnOnline: true,
   workboxOptions: {
     disableDevLogs: true,
+    skipWaiting: true,
+    clientsClaim: true,
+    cleanupOutdatedCaches: true,
   },
 });
 
