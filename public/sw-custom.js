@@ -2,11 +2,14 @@
 // This will be imported by the main service worker
 
 self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.action, event.notification.data);
   event.notification.close();
 
-  const { action, data } = event;
+  const action = event.action;
+  const data = event.notification.data;
   
-  if (action === 'view' && data?.alert) {
+  if (action === 'respond') {
+    console.log('[SW] Respond action clicked');
     // Open the app and focus on the alert
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -14,9 +17,11 @@ self.addEventListener('notificationclick', (event) => {
         for (const client of clientList) {
           if (client.url.includes(self.location.origin) && 'focus' in client) {
             // Post message to the client to handle the alert
+            console.log('[SW] Posting message to client:', data);
             client.postMessage({
               type: 'NOTIFICATION_CLICK',
-              alert: data.alert,
+              action: 'respond',
+              alert: data,
             });
             return client.focus();
           }
@@ -28,10 +33,12 @@ self.addEventListener('notificationclick', (event) => {
         }
       })
     );
-  } else if (action === 'close') {
+  } else if (action === 'decline') {
+    console.log('[SW] Decline action clicked');
     // Just close the notification (already done above)
     return;
   } else {
+    console.log('[SW] Default notification click (no action)');
     // Default click behavior - open the app
     event.waitUntil(
       clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {

@@ -21,7 +21,7 @@ export default function Profile() {
         <Authenticated>
           <nav className="flex flex-col w-full border-b border-border/80 shadow-sm bg-white rounded-b-xl">
             <div className="flex w-full h-16 p-4 justify-between items-center border-b border-border/80">
-              <h1 className="text-2xl font-bold">Metal Pulse - Profile</h1>
+              <h1 className="text-2xl font-bold">Mental Pulse - Profile</h1>
               <CustomUserButton />
             </div>
             <div className="flex w-full h-10 p-4 justify-between items-center">

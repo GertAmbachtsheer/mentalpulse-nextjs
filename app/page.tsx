@@ -8,6 +8,7 @@ import MoodTracker from "@/components/MoodTracker";
 import LocationToggleCard from "@/components/LocationToggleCard";
 import { Toaster } from "@/components/ui/sonner";
 import SupportCard from "@/components/SupportCard";
+import NotificationCenter from "@/components/NotificationCenter";
 
 export default function Home() {
   
@@ -19,6 +20,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold">Mental Pulse</h1>
             <CustomUserButton />
           </nav>
+          <NotificationCenter />
           <LocationToggleCard />
           <MoodTracker />
           <SupportCard />

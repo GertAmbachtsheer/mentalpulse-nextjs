@@ -67,12 +67,12 @@ export async function showPushNotification(options: NotificationOptions): Promis
         requireInteraction: options.requireInteraction ?? true,
         actions: [
           {
-            action: 'view',
-            title: 'View Details',
+            action: 'respond',
+            title: 'Respond',
           },
           {
-            action: 'close',
-            title: 'Dismiss',
+            action: 'decline',
+            title: 'Decline',
           },
         ],
       } as NotificationOptions & { actions: Array<{ action: string; title: string }> });
@@ -111,15 +111,15 @@ export async function showPushNotification(options: NotificationOptions): Promis
 export async function showPanicAlertNotification(
   distance: string,
   timeAgo: string,
-  alertData: any
+  alertId: string
 ): Promise<void> {
   await showPushNotification({
     title: '🚨 Emergency Alert Nearby!',
     body: `Someone needs help approximately ${distance}km away (${timeAgo})`,
-    tag: `panic-alert-${alertData._id}`,
+    tag: `panic-alert-${alertId}`,
     data: {
       type: 'panic-alert',
-      alert: alertData,
+      alertId,
     },
     requireInteraction: true,
   });

@@ -128,9 +128,10 @@ export const dismissPanicAlert = mutation({
   },
 });
 
-// Get panic alerts relevant to a user (within 20km)
+// Get panic alerts relevant to a user (within 40km)
 export const getRelevantPanicAlerts = query({
   args: {
+    alertId: v.string(),
     userId: v.string(),
     latitude: v.string(),
     longitude: v.string(),
@@ -143,18 +144,19 @@ export const getRelevantPanicAlerts = query({
     const activeAlerts = await ctx.db
       .query("panicAlerts")
       .withIndex("by_active", (q) => q.eq("active", true))
+      .filter((q) => q.eq(q.field("_id"), args.alertId))
       .collect();
-    
-    // Filter alerts within 20km and not from the current user
+
+    // Filter alerts within 40km and not from the current user
     const relevantAlerts = activeAlerts
       .filter((alert) => {
-        if (alert.userId === args.userId) return false;
+        // if (alert.userId === args.userId) return false;
         
         const alertLat = parseFloat(alert.latitude);
         const alertLon = parseFloat(alert.longitude);
         
         const distance = calculateDistance(userLat, userLon, alertLat, alertLon);
-        return distance <= 20;
+        return distance <= 40;
       })
       .map((alert) => ({
         ...alert,
