@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useMutation, useQuery } from "convex/react";
-import { panicAlertsApi } from "@/lib/convexCalls";
+import { getUserActivePanicAlert, triggerPanicAlert, dismissPanicAlert } from "@/lib/supabaseCalls";
 import { toast } from "sonner";
 import { useLocationStore } from "@/store/locationStore";
 import { requestNotificationPermission } from "@/lib/pushNotifications";
@@ -15,33 +14,23 @@ export default function PanicButton() {
     const { isLocationEnabled } = useLocationStore();
     const [isLoading, setIsLoading] = useState(false);
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-    
-    const activeAlert = useQuery(
-        panicAlertsApi.getUserActivePanicAlert,
-        user?.id ? { userId: user.id } : "skip"
-    );
-    
-    const triggerPanicMutation = useMutation(panicAlertsApi.triggerPanicAlert);
-    const dismissPanicMutation = useMutation(panicAlertsApi.dismissPanicAlert);
+    const [activeAlert, setActiveAlert] = useState<any | null | undefined>(undefined);
 
-    // const sendTestNotification = async (type: string) => {
-    //     setIsLoading(true);
-    //     try {
-    //     await fetch('/api/notifications/create', {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({
-    //             type,
-    //             title: `Test ${type} notification`,
-    //             message: `This is a ${type} notification sent at ${new Date().toLocaleTimeString()}`,
-    //         }),
-    //     });
-    //     } catch (error) {
-    //         console.error('Error sending notification:', error);
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // }
+    // Fetch active alert
+    const fetchActiveAlert = useCallback(async () => {
+        if (!user?.id) return;
+        try {
+            const data = await getUserActivePanicAlert(user.id);
+            setActiveAlert(data);
+        } catch (err) {
+            console.error("Error fetching active alert:", err);
+            setActiveAlert(null);
+        }
+    }, [user?.id]);
+
+    useEffect(() => {
+        fetchActiveAlert();
+    }, [fetchActiveAlert]);
 
     useEffect(() => {
         const initNotifications = async () => {
@@ -70,13 +59,14 @@ export default function PanicButton() {
         
         // If there's an active alert, dismiss it
         if (activeAlert) {
-            await dismissPanicMutation({ alertId: activeAlert._id });
+            await dismissPanicAlert(activeAlert.id);
             toast.success("Emergency alert deactivated", {
                 description: "Your panic alert has been turned off.",
                 duration: 3000,
             });
             setIsTriggering(false);
             setTimeout(() => setIsPressed(false), 300);
+            await fetchActiveAlert();
             return;
         }
 
@@ -93,7 +83,7 @@ export default function PanicButton() {
                 async (position) => {
                     try {
                         // Trigger panic alert
-                        const alertId = await triggerPanicMutation({
+                        const alertId = await triggerPanicAlert({
                             userId: user?.id!,
                             latitude: position.coords.latitude.toString(),
                             longitude: position.coords.longitude.toString(),
@@ -119,6 +109,7 @@ export default function PanicButton() {
                             description: "Nearby users have been notified.",
                             duration: 5000,
                         });
+                        await fetchActiveAlert();
                     } catch (error) {
                         toast.error("Failed to send emergency alert");
                     } finally {

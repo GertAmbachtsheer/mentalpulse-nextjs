@@ -1,11 +1,9 @@
 "use client";
 
-import { moodsApi } from "@/lib/convexCalls";
+import { getRecentUserMood, upsertMood } from "@/lib/supabaseCalls";
 import { useUser } from "@clerk/nextjs";
-import { useMutation, useQuery } from "convex/react";
-import { FaRegFaceSmileBeam, FaRegFaceGrin, FaRegFaceMeh, FaRegFaceFrownOpen, FaRegFaceFrown  } from "react-icons/fa6";
-import { useState, useEffect } from "react";
-import { fromUnixTime } from 'date-fns';
+import { FaRegFaceSmileBeam, FaRegFaceGrin, FaRegFaceMeh, FaRegFaceFrownOpen, FaRegFaceFrown } from "react-icons/fa6";
+import { useState, useEffect, useCallback } from "react";
 
 function isSameDay(date1: Date, date2: Date): boolean {
   return (
@@ -19,20 +17,30 @@ export default function MoodTracker() {
   const { user, isLoaded } = useUser();
   const [mood, setMood] = useState<string>("");
   const [sameDay, setSameDay] = useState<boolean>(false);
-  
-  // Call hooks directly in the component
-  const upsertMoodMutation = useMutation(moodsApi.upsertMood);
-  const userMood = useQuery(moodsApi.getRecentUserMood, 
-    user?.id ? { userId: user.id } : "skip"
-  );
+  const [userMood, setUserMood] = useState<any>(null);
+
+  // Fetch recent mood on mount
+  const fetchMood = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await getRecentUserMood(user.id);
+      setUserMood(data);
+    } catch (err) {
+      console.error("Error fetching mood:", err);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchMood();
+  }, [fetchMood]);
 
   // Initialize mood from recent user mood
   useEffect(() => {
-    if (userMood && userMood._creationTime) {
-      const userMoodDate = fromUnixTime(userMood._creationTime / 1000);
+    if (userMood && userMood.created_at) {
+      const userMoodDate = new Date(userMood.created_at);
       const today = new Date();
       const currentDayMood = isSameDay(userMoodDate, today);
-      
+
       if (currentDayMood && userMood.mood) {
         setMood(userMood.mood);
         setSameDay(true);
@@ -40,10 +48,16 @@ export default function MoodTracker() {
     }
   }, [userMood]);
 
-  function selectMood(inputMood: string) {
+  async function selectMood(inputMood: string) {
     if (mood === inputMood || !user?.id) return;
     setMood(inputMood);
-    upsertMoodMutation({ id: userMood?._id, userId: user.id, mood: inputMood, sameDay });
+    try {
+      await upsertMood({ id: userMood?.id, userId: user.id, mood: inputMood, sameDay });
+      // Refresh after mutation
+      await fetchMood();
+    } catch (err) {
+      console.error("Error saving mood:", err);
+    }
   }
 
   // Show loading state while authentication is being checked

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
-import { supportApi } from "@/lib/convexCalls";
+import { getSupport } from "@/lib/supabaseCalls";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { FaRegHeart } from "react-icons/fa";
 import { LuUsers } from "react-icons/lu";
@@ -9,20 +8,25 @@ import { RiSecurePaymentLine } from "react-icons/ri";
 
 export default function SupportCard() {
   const { user } = useUser();
-  const [support, setSupport] = useState<any>();
+  const [support, setSupport] = useState<any[]>([]);
   const [ownAmount, setOwnAmount] = useState("");
-  const getSupport = useQuery(supportApi.getSupport);
   const [selectedSupport, setSelectedSupport] = useState<any>(null);
 
   useEffect(() => {
-    if (getSupport) {
-      setSupport(getSupport);
+    async function fetchSupport() {
+      try {
+        const data = await getSupport();
+        setSupport(data || []);
+      } catch (err) {
+        console.error("Error fetching support:", err);
+      }
     }
-  }, [getSupport]);
+    fetchSupport();
+  }, []);
 
   const handleSupport = (item: any) => {
-    setSelectedSupport(selectedSupport?._id === item._id ? null : item);
-    setOwnAmount(selectedSupport?._id === item._id ? "" : item.price.toString());
+    setSelectedSupport(selectedSupport?.id === item.id ? null : item);
+    setOwnAmount(selectedSupport?.id === item.id ? "" : item.price.toString());
   };
 
   return (
@@ -39,7 +43,7 @@ export default function SupportCard() {
             <TabPanel>
               <div className="flex flex-col gap-2 mt-4">
                 {support?.filter((item: any) => item.type === "monthly")?.map((item: any) => (
-                  <div key={item._id} className={`flex flex-col gap-2 border border-gray-400 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 ${selectedSupport?._id === item._id ? "border-2 border-lime-500" : ""}`} onClick={() => handleSupport(item)}>
+                  <div key={item.id} className={`flex flex-col gap-2 border border-gray-400 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 ${selectedSupport?.id === item.id ? "border-2 border-lime-500" : ""}`} onClick={() => handleSupport(item)}>
                     <div className="flex justify-between">
                       <div className="flex flex-col">
                         <h3 className="text-lg font-semibold">{item.title}</h3>
@@ -62,7 +66,7 @@ export default function SupportCard() {
                   <p className="text-sm text-muted-foreground">Every contribution makes a difference in someone's mental health journey</p>
                 </div>
                 {support?.filter((item: any) => item.type === "once-off")?.map((item: any) => (
-                  <div key={item._id} className={`flex flex-col border border-gray-300 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 text-left ${selectedSupport?._id === item._id ? "border-2 border-lime-500" : ""}`} onClick={() => handleSupport(item)}>
+                  <div key={item.id} className={`flex flex-col border border-gray-300 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 text-left ${selectedSupport?.id === item.id ? "border-2 border-lime-500" : ""}`} onClick={() => handleSupport(item)}>
                     <p className="text-lg font-semibold">R{item.price}</p>
                     <h3 className="text-sm text-muted-foreground">{item.title}</h3>
                   </div>

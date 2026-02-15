@@ -1,8 +1,8 @@
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart"
-import { moodsApi } from "@/lib/convexCalls";
+import { getMoods } from "@/lib/supabaseCalls";
 import { useUser } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
-import { format, fromUnixTime } from "date-fns";
+import { useEffect, useState, useCallback } from "react";
+import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { CardContent } from "@/components/ui/card";
 
@@ -19,9 +19,22 @@ const chartConfig = {
 
 export function ProfileMoodChart() {
   const { user, isLoaded } = useUser();
-  const userMoods = useQuery(moodsApi.getMoods, 
-    user?.id ? { userId: user.id } : "skip"
-  );
+  const [userMoods, setUserMoods] = useState<any[]>([]);
+
+  const fetchMoods = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await getMoods(user.id);
+      setUserMoods(data || []);
+    } catch (err) {
+      console.error("Error fetching moods:", err);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchMoods();
+  }, [fetchMoods]);
+
   const getLast14Dates = () => {
     const dates = []
     const today = new Date()
@@ -42,7 +55,7 @@ export function ProfileMoodChart() {
   type MoodValue = keyof typeof moodValues;
   const dataMap = new Map()
   userMoods?.forEach(mood => {
-    dataMap.set(format(fromUnixTime(mood._creationTime / 1000), "dd/MM/yyyy"), mood.mood)
+    dataMap.set(format(new Date(mood.created_at), "dd/MM/yyyy"), mood.mood)
   });
 
   const chartData = getLast14Dates().map(date => ({
@@ -50,12 +63,6 @@ export function ProfileMoodChart() {
     moodValue: dataMap.has(date) ? moodValues[dataMap.get(date) as MoodValue] : null,
     mood: dataMap.get(date) || 'No data'
   }))
-
-  // const chartData = userMoods?.map((mood) => ({
-  //   date: format(fromUnixTime(mood._creationTime / 1000), "dd/MM/yyyy"),
-  //   moodValue: moodValues[mood.mood as MoodValue],
-  //   mood: mood.mood,
-  // }))
 
   return (
     <CardContent className="mx-4 mt-6 mb-3 bg-white rounded-xl pt-6 pb-4 px-4 shadow-sm border border-border/80">

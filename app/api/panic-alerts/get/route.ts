@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ConvexHttpClient } from 'convex/browser';
-import { api } from '@/convex/_generated/api';
-
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getRelevantPanicAlerts } from '@/lib/supabaseCalls';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,8 +13,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Query Convex for the panic alert
-    const alerts = await convex.query(api.panicAlerts.getRelevantPanicAlerts, {
+    // Query Supabase for the panic alert
+    const alerts = await getRelevantPanicAlerts({
       alertId,
       userId,
       latitude,

@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
-import { locationsApi } from "@/lib/convexCalls";
-import { useMutation, useQuery } from "convex/react";
+import { getUserLocation, upsertLocation } from "@/lib/supabaseCalls";
 import {
   Accordion,
   AccordionContent,
@@ -23,44 +22,53 @@ export default function LocationToggleCard() {
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [locationPermission, setLocationPermission] = useState<string>('');
+  const [userLocationData, setUserLocationData] = useState<any>(null);
 
-  const upsertLocationMutation = useMutation(locationsApi.upsertLocation);
-  const userLocationQuery = useQuery(locationsApi.getUserLocation, 
-    user?.id ? { userId: user.id } : "skip"
-  );
+  // Fetch user location from Supabase
+  const fetchUserLocation = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await getUserLocation(user.id);
+      setUserLocationData(data);
+    } catch (err) {
+      console.error("Error fetching location:", err);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
-    if (userLocationQuery) {
-      setLocation(userLocationQuery);
+    fetchUserLocation();
+  }, [fetchUserLocation]);
+
+  useEffect(() => {
+    if (userLocationData) {
+      setLocation(userLocationData);
       getLocation();
     }
-  },[userLocationQuery]);
+  }, [userLocationData]);
 
   useEffect(() => {
-    if (location) {
-      if (userLocationQuery?.longitude === location.longitude.toString() && userLocationQuery?.latitude === location.latitude.toString()) return;
-      upsertLocationMutation({
-        id: userLocationQuery?._id,
-        userId: user?.id!,
+    if (location && user?.id) {
+      if (userLocationData?.longitude === location.longitude.toString() && userLocationData?.latitude === location.latitude.toString()) return;
+      upsertLocation({
+        id: userLocationData?.id,
+        userId: user.id,
         latitude: location.latitude.toString(),
         longitude: location.longitude.toString(),
-      });
+      }).then(() => fetchUserLocation()).catch(err => console.error("Error saving location:", err));
     }
-  },[location]);
+  }, [location]);
   
   useEffect(() => {
     if (navigator.permissions && navigator.permissions.query) {
       navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        setLocationPermission(result.state); // 'granted', 'prompt', or 'denied'
-        // Listen for permission changes
+        setLocationPermission(result.state);
         result.addEventListener('change', () => {
           setLocationPermission(result.state);
         });
       });
     } else {
-      // Fallback: try to access geolocation directly
       if (navigator.geolocation) {
-        setLocationPermission('available'); // API exists but permission unknown
+        setLocationPermission('available');
       } else {
         toast.error("Geolocation is not supported by your browser", {
           position: "top-center",
