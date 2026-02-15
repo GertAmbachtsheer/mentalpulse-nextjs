@@ -150,7 +150,7 @@ export const getRelevantPanicAlerts = query({
     // Filter alerts within 40km and not from the current user
     const relevantAlerts = activeAlerts
       .filter((alert) => {
-        // if (alert.userId === args.userId) return false;
+        if (alert.userId === args.userId) return false;
         
         const alertLat = parseFloat(alert.latitude);
         const alertLon = parseFloat(alert.longitude);

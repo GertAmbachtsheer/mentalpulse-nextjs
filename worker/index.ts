@@ -1,7 +1,11 @@
-// Custom Service Worker for Push Notifications
-// This will be imported by the main service worker
+/// <reference lib="webworker" />
 
-self.addEventListener('notificationclick', (event) => {
+// Custom Service Worker for Push Notifications
+// This file is bundled by @ducanh2912/next-pwa into the generated service worker
+
+const sw = self as unknown as ServiceWorkerGlobalScope;
+
+sw.addEventListener('notificationclick', (event: NotificationEvent) => {
   console.log('[SW] Notification clicked:', event.action, event.notification.data);
   event.notification.close();
 
@@ -12,10 +16,10 @@ self.addEventListener('notificationclick', (event) => {
     console.log('[SW] Respond action clicked');
     // Open the app and focus on the alert
     event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
         // Check if there's already a window open
         for (const client of clientList) {
-          if (client.url.includes(self.location.origin) && 'focus' in client) {
+          if (client.url.includes(sw.location.origin) && 'focus' in client) {
             // Post message to the client to handle the alert
             console.log('[SW] Posting message to client:', data);
             client.postMessage({
@@ -23,13 +27,13 @@ self.addEventListener('notificationclick', (event) => {
               action: 'respond',
               alert: data,
             });
-            return client.focus();
+            return (client as WindowClient).focus();
           }
         }
         
         // If no window is open, open a new one
-        if (clients.openWindow) {
-          return clients.openWindow('/');
+        if (sw.clients.openWindow) {
+          return sw.clients.openWindow('/');
         }
       })
     );
@@ -41,15 +45,15 @@ self.addEventListener('notificationclick', (event) => {
     console.log('[SW] Default notification click (no action)');
     // Default click behavior - open the app
     event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
         for (const client of clientList) {
-          if (client.url.includes(self.location.origin) && 'focus' in client) {
-            return client.focus();
+          if (client.url.includes(sw.location.origin) && 'focus' in client) {
+            return (client as WindowClient).focus();
           }
         }
         
-        if (clients.openWindow) {
-          return clients.openWindow('/');
+        if (sw.clients.openWindow) {
+          return sw.clients.openWindow('/');
         }
       })
     );
@@ -57,11 +61,11 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Handle push events (for future server-sent push notifications)
-self.addEventListener('push', (event) => {
+sw.addEventListener('push', (event: PushEvent) => {
   const data = event.data?.json() ?? {};
   
   const title = data.title || 'MentalPulse Alert';
-  const options = {
+  const options: NotificationOptions & { actions: Array<{ action: string; title: string }> } = {
     body: data.body || 'You have a new notification',
     icon: data.icon || '/icon512_rounded.png',
     badge: '/icon512_rounded.png',
@@ -80,6 +84,8 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    sw.registration.showNotification(title, options)
   );
 });
+
+export {};

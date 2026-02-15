@@ -155,6 +155,10 @@ export default function NotificationCenter() {
           // Could navigate to a map view or show more details
           console.log("View alert from notification:", alert);
           // TODO: Implement navigation to alert details/map view
+          toast.success("View alert from notification", {
+            position: "top-center",
+            duration: 5000,
+          })
         }
       }
     };
