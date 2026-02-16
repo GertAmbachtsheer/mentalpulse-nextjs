@@ -9,6 +9,7 @@ export interface PanicAlert {
   longitude: string;
   timestamp: number;
   active: boolean;
+  respondee?: string;
   created_at: string;
 }
 

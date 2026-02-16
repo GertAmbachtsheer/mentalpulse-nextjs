@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { getUserActivePanicAlert, dismissPanicAlert } from "@/lib/supabaseCalls";
+import { usePanicAlertStore } from "@/store/panicAlertStore";
 import { toast } from "sonner";
 
 export default function PanicButton() {
@@ -10,6 +11,7 @@ export default function PanicButton() {
     const [isPressed, setIsPressed] = useState(false);
     const [isTriggering, setIsTriggering] = useState(false);
     const [activeAlert, setActiveAlert] = useState<any | null | undefined>(undefined);
+    const { setActiveResponseAlert, clearActiveResponseAlert } = usePanicAlertStore();
 
     // Fetch active alert
     const fetchActiveAlert = useCallback(async () => {
@@ -26,6 +28,48 @@ export default function PanicButton() {
     useEffect(() => {
         fetchActiveAlert();
     }, [fetchActiveAlert]);
+
+    // Poll for responses to active alert
+    useEffect(() => {
+        if (!activeAlert || !user?.id) return;
+
+        const pollForResponse = async () => {
+            try {
+                const res = await fetch('/api/panic-alerts/active-response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.id }),
+                });
+                const data = await res.json();
+
+                if (data.alert && data.alert.responderUserId) {
+                    // Someone responded! Show the map
+                    setActiveResponseAlert({
+                        alertId: data.alert.id,
+                        creatorUserId: data.alert.creatorUserId,
+                        responderUserId: data.alert.responderUserId,
+                        creatorLatitude: data.alert.creatorLatitude,
+                        creatorLongitude: data.alert.creatorLongitude,
+                        responderLatitude: data.alert.responderLatitude || '',
+                        responderLongitude: data.alert.responderLongitude || '',
+                    });
+
+                    toast.success("Someone is coming to help!", {
+                        description: "A responder is on their way to your location.",
+                        duration: 5000,
+                    });
+
+                    // Re-fetch to update button state
+                    await fetchActiveAlert();
+                }
+            } catch (err) {
+                console.error("Error polling for response:", err);
+            }
+        };
+
+        const interval = setInterval(pollForResponse, 10000);
+        return () => clearInterval(interval);
+    }, [activeAlert, user?.id, setActiveResponseAlert, fetchActiveAlert]);
     
     const handleEmergencyClick = async () => {
         if (isTriggering) return;
@@ -42,6 +86,7 @@ export default function PanicButton() {
         // If there's an active alert, dismiss it
         if (activeAlert) {
             await dismissPanicAlert(activeAlert.id);
+            clearActiveResponseAlert();
             toast.success("Emergency alert deactivated", {
                 description: "Your panic alert has been turned off.",
                 duration: 3000,

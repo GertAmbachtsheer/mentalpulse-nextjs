@@ -378,3 +378,48 @@ export async function getPanicAlertById(alertId: string) {
   if (error) throw error
   return data
 }
+
+export async function respondToPanicAlert(alertId: string, responderUserId: string) {
+  const { data, error } = await supabase
+    .from('panic_alerts')
+    .update({ respondee: responderUserId, active: false })
+    .eq('id', alertId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function getActiveRespondedAlert(userId: string) {
+  // Check if user is the alert creator with a respondee
+  const { data: creatorAlert, error: err1 } = await supabase
+    .from('panic_alerts')
+    .select('*')
+    .eq('user_id', userId)
+    .not('respondee', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (err1) throw err1
+
+  // Check if user is the respondee
+  const { data: responderAlert, error: err2 } = await supabase
+    .from('panic_alerts')
+    .select('*')
+    .eq('respondee', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (err2) throw err2
+
+  // Return the most recent of the two
+  if (creatorAlert && responderAlert) {
+    return new Date(creatorAlert.created_at) > new Date(responderAlert.created_at)
+      ? creatorAlert
+      : responderAlert
+  }
+  return creatorAlert || responderAlert || null
+}

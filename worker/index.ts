@@ -27,7 +27,7 @@ sw.addEventListener('push', (event: PushEvent) => {
     ];
   } else if (data.data?.type === 'panic-response') {
     options.actions = [
-      { action: 'view', title: 'View' },
+      { action: 'view-response', title: '🗺️ View Map' },
       { action: 'close', title: 'Dismiss' },
     ];
   } else {
@@ -52,14 +52,9 @@ sw.addEventListener('notificationclick', (event: NotificationEvent) => {
 
   if (action === 'respond' && data?.type === 'panic-alert') {
     // User clicked "Respond" on a panic alert notification
-    // Call the respond API directly from the service worker
     event.waitUntil(
       (async () => {
         try {
-          // We need the responder's user ID. Post a message to the client to get it,
-          // or use the subscription info stored in the SW scope.
-          // For now, call the respond API — we pass alertId and let the client
-          // post the userId via a message.
           const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
           
           for (const client of clients) {
@@ -83,9 +78,71 @@ sw.addEventListener('notificationclick', (event: NotificationEvent) => {
         }
       })()
     );
+  } else if (action === 'view-response' && data?.type === 'panic-response') {
+    // Creator clicked "View Map" on a panic-response notification
+    // Send message to client to show the response map
+    event.waitUntil(
+      (async () => {
+        try {
+          const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+          
+          for (const client of clients) {
+            if (client.url.includes(sw.location.origin) && 'focus' in client) {
+              client.postMessage({
+                type: 'SHOW_RESPONSE_MAP',
+                alertId: data.alertId,
+                responderUserId: data.responderUserId,
+                responderLatitude: data.responderLatitude,
+                responderLongitude: data.responderLongitude,
+                alertLatitude: data.alertLatitude,
+                alertLongitude: data.alertLongitude,
+              });
+              return (client as WindowClient).focus();
+            }
+          }
+
+          // If no window is open, just open the app
+          if (sw.clients.openWindow) {
+            return sw.clients.openWindow('/');
+          }
+        } catch (error) {
+          console.error('[SW] Error handling view-response action:', error);
+        }
+      })()
+    );
   } else if (action === 'decline' || action === 'close') {
     // Just close the notification (already done above)
     return;
+  } else if (data?.type === 'panic-response') {
+    // Default click on panic-response notification — show the map
+    event.waitUntil(
+      (async () => {
+        try {
+          const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+          
+          for (const client of clients) {
+            if (client.url.includes(sw.location.origin) && 'focus' in client) {
+              client.postMessage({
+                type: 'SHOW_RESPONSE_MAP',
+                alertId: data.alertId,
+                responderUserId: data.responderUserId,
+                responderLatitude: data.responderLatitude,
+                responderLongitude: data.responderLongitude,
+                alertLatitude: data.alertLatitude,
+                alertLongitude: data.alertLongitude,
+              });
+              return (client as WindowClient).focus();
+            }
+          }
+
+          if (sw.clients.openWindow) {
+            return sw.clients.openWindow('/');
+          }
+        } catch (error) {
+          console.error('[SW] Error handling panic-response click:', error);
+        }
+      })()
+    );
   } else {
     // Default click — open/focus the app
     event.waitUntil(
