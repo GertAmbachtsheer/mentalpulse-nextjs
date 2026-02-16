@@ -5,45 +5,89 @@
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
+// Handle push events from the server (Web Push / VAPID)
+sw.addEventListener('push', (event: PushEvent) => {
+  const data = event.data?.json() ?? {};
+  
+  const title = data.title || 'MentalPulse Alert';
+  const options: NotificationOptions & { actions: Array<{ action: string; title: string }> } = {
+    body: data.body || 'You have a new notification',
+    icon: data.icon || '/icon512_rounded.png',
+    badge: data.badge || '/icon512_rounded.png',
+    data: data.data || {},
+    requireInteraction: data.requireInteraction ?? true,
+    actions: [],
+  };
+
+  // Customize actions based on notification type
+  if (data.data?.type === 'panic-alert') {
+    options.actions = [
+      { action: 'respond', title: '💚 Respond' },
+      { action: 'decline', title: 'Dismiss' },
+    ];
+  } else if (data.data?.type === 'panic-response') {
+    options.actions = [
+      { action: 'view', title: 'View' },
+      { action: 'close', title: 'Dismiss' },
+    ];
+  } else {
+    options.actions = [
+      { action: 'view', title: 'View Details' },
+      { action: 'close', title: 'Dismiss' },
+    ];
+  }
+
+  event.waitUntil(
+    sw.registration.showNotification(title, options)
+  );
+});
+
+// Handle notification clicks
 sw.addEventListener('notificationclick', (event: NotificationEvent) => {
   console.log('[SW] Notification clicked:', event.action, event.notification.data);
   event.notification.close();
 
   const action = event.action;
   const data = event.notification.data;
-  
-  if (action === 'respond') {
-    console.log('[SW] Respond action clicked');
-    // Open the app and focus on the alert
+
+  if (action === 'respond' && data?.type === 'panic-alert') {
+    // User clicked "Respond" on a panic alert notification
+    // Call the respond API directly from the service worker
     event.waitUntil(
-      sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-        // Check if there's already a window open
-        for (const client of clientList) {
-          if (client.url.includes(sw.location.origin) && 'focus' in client) {
-            // Post message to the client to handle the alert
-            console.log('[SW] Posting message to client:', data);
-            client.postMessage({
-              type: 'NOTIFICATION_CLICK',
-              action: 'respond',
-              alert: data,
-            });
-            return (client as WindowClient).focus();
+      (async () => {
+        try {
+          // We need the responder's user ID. Post a message to the client to get it,
+          // or use the subscription info stored in the SW scope.
+          // For now, call the respond API — we pass alertId and let the client
+          // post the userId via a message.
+          const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+          
+          for (const client of clients) {
+            if (client.url.includes(sw.location.origin) && 'focus' in client) {
+              client.postMessage({
+                type: 'NOTIFICATION_CLICK',
+                action: 'respond',
+                alertId: data.alertId,
+                triggerUserId: data.triggerUserId,
+              });
+              return (client as WindowClient).focus();
+            }
           }
+
+          // If no window is open, open one and pass the alert data via URL
+          if (sw.clients.openWindow) {
+            return sw.clients.openWindow(`/?respondToAlert=${data.alertId}`);
+          }
+        } catch (error) {
+          console.error('[SW] Error handling respond action:', error);
         }
-        
-        // If no window is open, open a new one
-        if (sw.clients.openWindow) {
-          return sw.clients.openWindow('/');
-        }
-      })
+      })()
     );
-  } else if (action === 'decline') {
-    console.log('[SW] Decline action clicked');
+  } else if (action === 'decline' || action === 'close') {
     // Just close the notification (already done above)
     return;
   } else {
-    console.log('[SW] Default notification click (no action)');
-    // Default click behavior - open the app
+    // Default click — open/focus the app
     event.waitUntil(
       sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
         for (const client of clientList) {
@@ -58,34 +102,6 @@ sw.addEventListener('notificationclick', (event: NotificationEvent) => {
       })
     );
   }
-});
-
-// Handle push events (for future server-sent push notifications)
-sw.addEventListener('push', (event: PushEvent) => {
-  const data = event.data?.json() ?? {};
-  
-  const title = data.title || 'MentalPulse Alert';
-  const options: NotificationOptions & { actions: Array<{ action: string; title: string }> } = {
-    body: data.body || 'You have a new notification',
-    icon: data.icon || '/icon512_rounded.png',
-    badge: '/icon512_rounded.png',
-    data: data.data || {},
-    requireInteraction: data.requireInteraction ?? true,
-    actions: [
-      {
-        action: 'view',
-        title: 'View Details',
-      },
-      {
-        action: 'close',
-        title: 'Dismiss',
-      },
-    ],
-  };
-
-  event.waitUntil(
-    sw.registration.showNotification(title, options)
-  );
 });
 
 export {};

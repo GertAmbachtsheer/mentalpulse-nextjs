@@ -21,12 +21,3 @@ const pwaConfig = withPWAInit({
 });
 
 export default pwaConfig(nextConfig);
-// import type { NextConfig } from "next";
-
-// const NextConfig = {
-//   output: 'standalone',
-//   /* config options here */
-// };
-
-// export default NextConfig;
-

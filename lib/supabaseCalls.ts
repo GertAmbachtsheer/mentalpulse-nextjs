@@ -291,3 +291,90 @@ export async function getRelevantPanicAlerts({
 
   return relevantAlerts
 }
+
+// ──────────────────────────────────────────────
+// Push Subscriptions
+// ──────────────────────────────────────────────
+
+export async function savePushSubscription(userId: string, subscription: PushSubscriptionJSON) {
+  const { data, error } = await supabase
+    .from('push_subscriptions')
+    .upsert(
+      { user_id: userId, subscription },
+      { onConflict: 'user_id,subscription' }
+    )
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deletePushSubscription(userId: string, endpoint: string) {
+  // We need to find subscriptions where the JSON subscription.endpoint matches
+  const { data: subs, error: fetchError } = await supabase
+    .from('push_subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+
+  if (fetchError) throw fetchError
+
+  // Filter by endpoint in the subscription JSON
+  const toDelete = (subs || []).filter(
+    (sub: any) => sub.subscription?.endpoint === endpoint
+  )
+
+  for (const sub of toDelete) {
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .delete()
+      .eq('id', sub.id)
+
+    if (error) throw error
+  }
+}
+
+export async function getUserPushSubscriptions(userId: string) {
+  const { data, error } = await supabase
+    .from('push_subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+
+  if (error) throw error
+  return data || []
+}
+
+export async function getAllPushSubscriptions() {
+  const { data, error } = await supabase
+    .from('push_subscriptions')
+    .select('*')
+
+  if (error) throw error
+  return data || []
+}
+
+// ──────────────────────────────────────────────
+// Panic Responses
+// ──────────────────────────────────────────────
+
+export async function savePanicResponse(alertId: string, responderUserId: string) {
+  const { data, error } = await supabase
+    .from('panic_responses')
+    .insert({ alert_id: alertId, responder_user_id: responderUserId })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function getPanicAlertById(alertId: string) {
+  const { data, error } = await supabase
+    .from('panic_alerts')
+    .select('*')
+    .eq('id', alertId)
+    .single()
+
+  if (error) throw error
+  return data
+}

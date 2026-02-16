@@ -2,18 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
-import { getUserActivePanicAlert, triggerPanicAlert, dismissPanicAlert } from "@/lib/supabaseCalls";
+import { getUserActivePanicAlert, dismissPanicAlert } from "@/lib/supabaseCalls";
 import { toast } from "sonner";
-import { useLocationStore } from "@/store/locationStore";
-import { requestNotificationPermission } from "@/lib/pushNotifications";
 
 export default function PanicButton() {
     const { user } = useUser();
     const [isPressed, setIsPressed] = useState(false);
     const [isTriggering, setIsTriggering] = useState(false);
-    const { isLocationEnabled } = useLocationStore();
-    const [isLoading, setIsLoading] = useState(false);
-    const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
     const [activeAlert, setActiveAlert] = useState<any | null | undefined>(undefined);
 
     // Fetch active alert
@@ -31,19 +26,6 @@ export default function PanicButton() {
     useEffect(() => {
         fetchActiveAlert();
     }, [fetchActiveAlert]);
-
-    useEffect(() => {
-        const initNotifications = async () => {
-          const permission = await requestNotificationPermission();
-          setNotificationPermission(permission);
-          
-          if (permission === 'denied') {
-            console.warn('Notification permission denied. Panic alerts will not be shown.');
-          }
-        };
-        
-        initNotifications();
-      }, []);
     
     const handleEmergencyClick = async () => {
         if (isTriggering) return;
@@ -82,35 +64,29 @@ export default function PanicButton() {
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
                     try {
-                        // Trigger panic alert
-                        const alertId = await triggerPanicAlert({
-                            userId: user?.id!,
-                            latitude: position.coords.latitude.toString(),
-                            longitude: position.coords.longitude.toString(),
+                        // Call the server-side trigger endpoint 
+                        // This creates the alert AND sends Web Push to all users
+                        const response = await fetch('/api/panic-alerts/trigger', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: user?.id,
+                                latitude: position.coords.latitude.toString(),
+                                longitude: position.coords.longitude.toString(),
+                            }),
                         });
 
-                        try {
-                            await fetch('/api/notifications/create', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    type: 'panicAlert',
-                                    title: "EMERGENCY ALERT",
-                                    message: JSON.stringify({"alertId": alertId, "userId": user?.id}),
-                                }),
-                            });
-                        } catch (error) {
-                            console.error('Error sending notification:', error);
-                        } finally {
-                            setIsLoading(false);
+                        if (!response.ok) {
+                            throw new Error('Failed to trigger panic alert');
                         }
                         
                         toast.success("Emergency alert activated!", {
-                            description: "Nearby users have been notified.",
+                            description: "All users have been notified via push notification.",
                             duration: 5000,
                         });
                         await fetchActiveAlert();
                     } catch (error) {
+                        console.error('Error triggering panic alert:', error);
                         toast.error("Failed to send emergency alert");
                     } finally {
                         setIsTriggering(false);

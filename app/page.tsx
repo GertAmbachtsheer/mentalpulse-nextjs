@@ -9,9 +9,14 @@ import LocationToggleCard from "@/components/LocationToggleCard";
 import { Toaster } from "@/components/ui/sonner";
 import SupportCard from "@/components/SupportCard";
 import NotificationCenter from "@/components/NotificationCenter";
+import PanicButton from "@/components/PanicButton";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
+  
+  // Subscribe to Web Push notifications when authenticated
+  usePushSubscription();
   
   if (!isLoaded) {
     return <Loading />;
