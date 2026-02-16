@@ -10,7 +10,6 @@ import { Toaster } from "@/components/ui/sonner";
 import SupportCard from "@/components/SupportCard";
 import NotificationCenter from "@/components/NotificationCenter";
 import PanicButton from "@/components/PanicButton";
-import AlertResponseMap from "@/components/AlertResponseMap";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 export default function Home() {
@@ -33,7 +32,6 @@ export default function Home() {
               <CustomUserButton />
             </nav>
             <NotificationCenter />
-            <AlertResponseMap />
             <LocationToggleCard />
             <MoodTracker />
             <SupportCard />

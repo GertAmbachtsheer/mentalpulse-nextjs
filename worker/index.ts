@@ -30,6 +30,10 @@ sw.addEventListener('push', (event: PushEvent) => {
       { action: 'view-response', title: '🗺️ View Map' },
       { action: 'close', title: 'Dismiss' },
     ];
+  } else if (data.data?.type === 'alert-cancelled') {
+    options.actions = [
+      { action: 'close', title: 'OK' },
+    ];
   } else {
     options.actions = [
       { action: 'view', title: 'View Details' },
@@ -107,6 +111,33 @@ sw.addEventListener('notificationclick', (event: NotificationEvent) => {
           }
         } catch (error) {
           console.error('[SW] Error handling view-response action:', error);
+        }
+      })()
+    );
+  } else if ((action === 'close' || !action) && data?.type === 'alert-cancelled') {
+    // Responder clicked OK/Dismiss on "Alert Cancelled" notification
+    // Notify the client so it can show a dialog/redirect
+    event.waitUntil(
+      (async () => {
+        try {
+          const clients = await sw.clients.matchAll({ type: 'window', includeUncontrolled: true });
+          
+          for (const client of clients) {
+            if (client.url.includes(sw.location.origin) && 'focus' in client) {
+              client.postMessage({
+                type: 'ALERT_CANCELLED',
+                alertId: data.alertId,
+              });
+              return (client as WindowClient).focus();
+            }
+          }
+
+          // If no window is open, open one
+          if (sw.clients.openWindow) {
+            return sw.clients.openWindow('/');
+          }
+        } catch (error) {
+          console.error('[SW] Error handling alert-cancelled action:', error);
         }
       })()
     );

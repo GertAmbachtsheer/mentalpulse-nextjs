@@ -3,14 +3,15 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { Map, MapMarker, MarkerContent, MarkerLabel, MapRoute, MapRef } from '@/components/ui/map';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { usePanicAlertStore } from '@/store/panicAlertStore';
-import { X, Navigation } from 'lucide-react';
 
-export default function AlertResponseMap() {
+interface AlertResponseMapProps {
+  onClose?: () => void;
+}
+
+export default function AlertResponseMap({ onClose }: AlertResponseMapProps) {
   const { user } = useUser();
-  const { activeResponseAlert, showResponseMap, clearActiveResponseAlert } = usePanicAlertStore();
+  const { activeResponseAlert, clearActiveResponseAlert } = usePanicAlertStore();
   const mapRef = useRef<MapRef>(null);
   const [responderLocation, setResponderLocation] = useState<{ lat: number; lng: number } | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,7 +63,7 @@ export default function AlertResponseMap() {
   }, [isCreator, user?.id]);
 
   useEffect(() => {
-    if (!showResponseMap || !activeResponseAlert) return;
+    if (!activeResponseAlert) return;
 
     // Set initial responder location
     if (initialResponderLat && initialResponderLng) {
@@ -84,7 +85,7 @@ export default function AlertResponseMap() {
         intervalRef.current = null;
       }
     };
-  }, [showResponseMap, activeResponseAlert, isResponder, isCreator, updateResponderLocation, fetchResponderLocation, initialResponderLat, initialResponderLng]);
+  }, [activeResponseAlert, isResponder, isCreator, updateResponderLocation, fetchResponderLocation, initialResponderLat, initialResponderLng]);
 
   // Fit bounds to show both markers
   useEffect(() => {
@@ -102,7 +103,7 @@ export default function AlertResponseMap() {
     );
   }, [responderLocation, creatorLat, creatorLng]);
 
-  if (!showResponseMap || !activeResponseAlert) return null;
+  if (!activeResponseAlert) return null;
 
   const respLat = responderLocation?.lat || initialResponderLat;
   const respLng = responderLocation?.lng || initialResponderLng;
@@ -118,88 +119,54 @@ export default function AlertResponseMap() {
   const centerLat = hasResponderLocation ? (creatorLat + respLat) / 2 : creatorLat;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <Card className="relative w-full max-w-lg overflow-hidden rounded-2xl shadow-2xl border-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
-          <div className="flex items-center gap-2">
-            <Navigation className="size-5" />
-            <div>
-              <h3 className="font-semibold text-sm">
-                {isResponder ? 'Navigating to Person in Need' : 'Help is on the Way'}
-              </h3>
-              <p className="text-xs text-emerald-100">
-                {isResponder ? 'Head to the location shown below' : 'Someone is coming to help you'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={clearActiveResponseAlert}
-            className="p-1 rounded-full hover:bg-white/20 transition-colors"
-            aria-label="Close map"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
+    <div className="flex flex-col h-full w-full">
+      {/* Map — fills remaining space */}
+      <div className="flex-1 w-full min-h-0">
+        <Map
+          ref={mapRef}
+          center={[centerLng, centerLat]}
+          zoom={12}
+        >
+          {/* Alert creator marker (person in need) */}
+          {hasCreatorLocation && (
+            <MapMarker longitude={creatorLng} latitude={creatorLat}>
+              <MarkerContent>
+                <div className="relative">
+                  <div className="size-6 rounded-full bg-red-500 border-2 border-white shadow-lg animate-pulse" />
+                  <div className="absolute inset-0 size-6 rounded-full bg-red-500/40 animate-ping" />
+                </div>
+                <MarkerLabel position="top" className="text-white font-semibold">
+                  Needs Help
+                </MarkerLabel>
+              </MarkerContent>
+            </MapMarker>
+          )}
 
-        {/* Map */}
-        <div className="h-[400px] w-full">
-          <Map
-            ref={mapRef}
-            center={[centerLng, centerLat]}
-            zoom={12}
-          >
-            {/* Alert creator marker (person in need) */}
-            {hasCreatorLocation && (
-              <MapMarker longitude={creatorLng} latitude={creatorLat}>
-                <MarkerContent>
-                  <div className="relative">
-                    <div className="size-6 rounded-full bg-red-500 border-2 border-white shadow-lg animate-pulse" />
-                    <div className="absolute inset-0 size-6 rounded-full bg-red-500/40 animate-ping" />
-                  </div>
-                  <MarkerLabel position="top" className="text-white font-semibold">
-                    Needs Help
-                  </MarkerLabel>
-                </MarkerContent>
-              </MapMarker>
-            )}
+          {/* Responder marker (person on the way) */}
+          {hasResponderLocation && (
+            <MapMarker longitude={respLng} latitude={respLat}>
+              <MarkerContent>
+                <div className="size-6 rounded-full bg-emerald-500 border-2 border-white shadow-lg" />
+                <MarkerLabel position="top" className="text-white font-semibold">
+                  On the Way
+                </MarkerLabel>
+              </MarkerContent>
+            </MapMarker>
+          )}
 
-            {/* Responder marker (person on the way) */}
-            {hasResponderLocation && (
-              <MapMarker longitude={respLng} latitude={respLat}>
-                <MarkerContent>
-                  <div className="size-6 rounded-full bg-emerald-500 border-2 border-white shadow-lg" />
-                  <MarkerLabel position="top" className="text-white font-semibold">
-                    On the Way
-                  </MarkerLabel>
-                </MarkerContent>
-              </MapMarker>
-            )}
-
-            {/* Route line between them */}
-            {routeCoordinates.length === 2 && (
-              <MapRoute
-                coordinates={routeCoordinates}
-                color="#10b981"
-                width={4}
-                opacity={0.9}
-                dashArray={[8, 4]}
-                interactive={false}
-              />
-            )}
-          </Map>
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 py-3 bg-white border-t">
-          <Button
-            onClick={clearActiveResponseAlert}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
-          >
-            {isResponder ? "I've Arrived" : 'Close'}
-          </Button>
-        </div>
-      </Card>
+          {/* Route line between them */}
+          {routeCoordinates.length === 2 && (
+            <MapRoute
+              coordinates={routeCoordinates}
+              color="#10b981"
+              width={4}
+              opacity={0.9}
+              dashArray={[8, 4]}
+              interactive={false}
+            />
+          )}
+        </Map>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUser } from "@clerk/nextjs";
 import { toast } from 'sonner';
 import { usePanicAlertStore } from '@/store/panicAlertStore';
@@ -10,8 +11,9 @@ import { usePanicAlertStore } from '@/store/panicAlertStore';
  * (notification click events) and handles them appropriately.
  */
 export default function NotificationCenter() {
+  const router = useRouter();
   const { user } = useUser();
-  const { setActiveResponseAlert } = usePanicAlertStore();
+  const { setActiveResponseAlert, setAlertCancelledNotice } = usePanicAlertStore();
 
   // Listen for notification clicks from service worker
   useEffect(() => {
@@ -63,7 +65,7 @@ export default function NotificationCenter() {
                 duration: 3000,
               });
 
-              // Show the response map for the responder
+              // Navigate to tracking page for the responder
               if (data.alert) {
                 setActiveResponseAlert({
                   alertId: data.alert.id,
@@ -74,6 +76,7 @@ export default function NotificationCenter() {
                   responderLatitude: latitude || data.alert.responderLatitude || '',
                   responderLongitude: longitude || data.alert.responderLongitude || '',
                 });
+                router.push('/tracking');
               }
             } else {
               toast.error("Failed to send response", {
@@ -89,7 +92,7 @@ export default function NotificationCenter() {
             });
           }
         } else if (action === 'show-response-map' || (event.data?.type === 'NOTIFICATION_CLICK' && event.data?.notificationType === 'panic-response')) {
-          // Creator side: someone responded, show the map
+          // Creator side: someone responded, navigate to tracking page
           if (alertId && responderUserId) {
             setActiveResponseAlert({
               alertId,
@@ -100,6 +103,7 @@ export default function NotificationCenter() {
               responderLatitude: responderLatitude || '',
               responderLongitude: responderLongitude || '',
             });
+            router.push('/tracking');
           }
         }
       }
@@ -117,7 +121,15 @@ export default function NotificationCenter() {
             responderLatitude: responderLatitude || '',
             responderLongitude: responderLongitude || '',
           });
+          router.push('/tracking');
         }
+      }
+
+      // Handle ALERT_CANCELLED messages from SW
+      if (event.data?.type === 'ALERT_CANCELLED') {
+        const { alertId } = event.data;
+        console.log('[NotificationCenter] Alert cancelled:', alertId);
+        setAlertCancelledNotice(true);
       }
     };
 
@@ -126,7 +138,7 @@ export default function NotificationCenter() {
     return () => {
       navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
     };
-  }, [user?.id, setActiveResponseAlert]);
+  }, [user?.id, setActiveResponseAlert, router]);
 
   // Handle ?respondToAlert= URL parameter (when app opens from notification click)
   useEffect(() => {
@@ -181,7 +193,7 @@ export default function NotificationCenter() {
               duration: 5000,
             });
 
-            // Show the map
+            // Navigate to tracking page
             if (data.alert) {
               setActiveResponseAlert({
                 alertId: data.alert.id,
@@ -192,6 +204,7 @@ export default function NotificationCenter() {
                 responderLatitude: latitude || data.alert.responderLatitude || '',
                 responderLongitude: longitude || data.alert.responderLongitude || '',
               });
+              router.push('/tracking');
             }
           }
         } catch (error) {
@@ -201,7 +214,7 @@ export default function NotificationCenter() {
 
       sendResponse();
     }
-  }, [user?.id, setActiveResponseAlert]);
+  }, [user?.id, setActiveResponseAlert, router]);
 
   return <></>;
 }

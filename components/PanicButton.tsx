@@ -1,21 +1,24 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { getUserActivePanicAlert, dismissPanicAlert } from "@/lib/supabaseCalls";
 import { usePanicAlertStore } from "@/store/panicAlertStore";
 import { toast } from "sonner";
 
 export default function PanicButton() {
+    const router = useRouter();
     const { user } = useUser();
     const [isPressed, setIsPressed] = useState(false);
     const [isTriggering, setIsTriggering] = useState(false);
     const [activeAlert, setActiveAlert] = useState<any | null | undefined>(undefined);
-    const { setActiveResponseAlert, clearActiveResponseAlert } = usePanicAlertStore();
+    const { activeResponseAlert, setActiveResponseAlert, clearActiveResponseAlert } = usePanicAlertStore();
 
     // Fetch active alert
     const fetchActiveAlert = useCallback(async () => {
-        if (!user?.id) return;
+        // Don't poll if user is responding to someone else
+        if (!user?.id || activeResponseAlert) return;
         try {
             const data = await getUserActivePanicAlert(user.id);
             setActiveAlert(data);
@@ -23,7 +26,7 @@ export default function PanicButton() {
             console.error("Error fetching active alert:", err);
             setActiveAlert(null);
         }
-    }, [user?.id]);
+    }, [user?.id, activeResponseAlert]);
 
     useEffect(() => {
         fetchActiveAlert();
@@ -31,7 +34,7 @@ export default function PanicButton() {
 
     // Poll for responses to active alert
     useEffect(() => {
-        if (!activeAlert || !user?.id) return;
+        if (!activeAlert || !user?.id || activeResponseAlert) return;
 
         const pollForResponse = async () => {
             try {
@@ -43,7 +46,7 @@ export default function PanicButton() {
                 const data = await res.json();
 
                 if (data.alert && data.alert.responderUserId) {
-                    // Someone responded! Show the map
+                    // Someone responded! Navigate to tracking page
                     setActiveResponseAlert({
                         alertId: data.alert.id,
                         creatorUserId: data.alert.creatorUserId,
@@ -53,6 +56,7 @@ export default function PanicButton() {
                         responderLatitude: data.alert.responderLatitude || '',
                         responderLongitude: data.alert.responderLongitude || '',
                     });
+                    router.push('/tracking');
 
                     toast.success("Someone is coming to help!", {
                         description: "A responder is on their way to your location.",
@@ -69,7 +73,7 @@ export default function PanicButton() {
 
         const interval = setInterval(pollForResponse, 10000);
         return () => clearInterval(interval);
-    }, [activeAlert, user?.id, setActiveResponseAlert, fetchActiveAlert]);
+    }, [activeAlert, user?.id, activeResponseAlert, setActiveResponseAlert, fetchActiveAlert]);
     
     const handleEmergencyClick = async () => {
         if (isTriggering) return;
