@@ -10,7 +10,7 @@ export async function getMoods(userId: string) {
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: true })
-    .limit(14)
+    .limit(35)
 
   if (error) throw error
   return data

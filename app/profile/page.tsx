@@ -7,6 +7,7 @@ import Loading from "../loading";
 import ProfileLocationToggleCard from "@/components/ProfileLocationToggleCard";
 import { Toaster } from "@/components/ui/sonner";
 import { ProfileMoodChart } from "@/components/ProfileMoodChart";
+import { ProfileMoodCalendar } from "@/components/ProfileMoodCalendar";
 import Link from "next/link";
 import { IoHomeOutline } from "react-icons/io5";
 import { FaChevronRight } from "react-icons/fa6";
@@ -35,6 +36,7 @@ export default function Profile() {
             </nav>
             <ProfileLocationToggleCard />
             <ProfileMoodChart />
+            <ProfileMoodCalendar />
             <Toaster />
           </>
         ) : (
