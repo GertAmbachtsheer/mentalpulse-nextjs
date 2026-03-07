@@ -2,7 +2,6 @@
 
 import { getRecentUserMood, upsertMood } from "@/lib/supabaseCalls";
 import { useUser } from "@clerk/nextjs";
-import { FaRegFaceSmileBeam, FaRegFaceGrin, FaRegFaceMeh, FaRegFaceFrownOpen, FaRegFaceFrown } from "react-icons/fa6";
 import { useState, useEffect, useCallback } from "react";
 
 function isSameDay(date1: Date, date2: Date): boolean {
@@ -70,30 +69,69 @@ export default function MoodTracker() {
   }
 
   return (
-    <section className="mx-2 mt-1 mb-1 bg-white rounded-xl p-6 shadow-sm border border-border/80">
-      <h2 className="text-2xl font-semibold text-center mb-6">How are you feeling today?</h2>
-      <div className="flex justify-around">
-        <button value="Great" className="rounded-full" onClick={() => selectMood("Great")}>
-          <FaRegFaceSmileBeam className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Great" ? "text-green-500" : "text-gray-500 hover:text-green-500"}`} />
-          <span className="text-sm font-medium">Great</span>
-        </button>
-        <button value="Good" className="rounded-full" onClick={() => selectMood("Good")}>
-          <FaRegFaceGrin className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Good" ? "text-lime-600" : "text-gray-500 hover:text-lime-600"}`} />
-          <span className="text-sm font-medium">Good</span>
-        </button>
-        <button value="Neutral" className="rounded-full" onClick={() => selectMood("Neutral")}>
-          <FaRegFaceMeh className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Neutral" ? "text-yellow-500" : "text-gray-500 hover:text-yellow-500"}`} />
-          <span className="text-sm font-medium">Neutral</span>
-        </button>
-        <button value="Bad" className="rounded-full" onClick={() => selectMood("Bad")}>
-          <FaRegFaceFrownOpen className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Bad" ? "text-orange-500" : "text-gray-500 hover:text-orange-500"}`} />
-          <span className="text-sm font-medium">Bad</span>
-        </button>
-        <button value="Terrible" className="rounded-full" onClick={() => selectMood("Terrible")}>
-          <FaRegFaceFrown className={`w-12 h-12 transition-all duration-200 hover:scale-105 cursor-pointer ${mood === "Terrible" ? "text-red-500" : "text-gray-500 hover:text-red-500"}`} />
-          <span className="text-sm font-medium">Terrible</span>
-        </button>
+    <div className="mb-8">
+      <div className="mb-4 flex items-end justify-between">
+        <h2 className="text-2xl font-bold text-text-main dark:text-white tracking-tight">How are you<br/>feeling today?</h2>
+        <a className="text-xs font-semibold text-primary mb-1 hover:underline" href="#">History</a>
       </div>
-    </section>
+      <div className="bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-soft">
+        <div className="flex justify-between items-center gap-2">
+          {/* Mood 1: Terrible (Awful) */}
+          <button 
+            className="flex flex-col items-center gap-2 group focus:outline-none" 
+            onClick={() => selectMood("Terrible")}
+          >
+            <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 ${mood === "Terrible" ? "bg-red-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-red-100 group-hover:text-red-500"}`}>
+              <span className="material-symbols-outlined text-[32px]">sentiment_very_dissatisfied</span>
+            </div>
+            <span className={`text-[10px] font-medium ${mood === "Terrible" ? "text-red-500" : "text-slate-400"}`}>Awful</span>
+          </button>
+          
+          {/* Mood 2: Bad */}
+          <button 
+            className="flex flex-col items-center gap-2 group focus:outline-none" 
+            onClick={() => selectMood("Bad")}
+          >
+            <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 ${mood === "Bad" ? "bg-orange-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-orange-100 group-hover:text-orange-500"}`}>
+              <span className="material-symbols-outlined text-[32px]">sentiment_dissatisfied</span>
+            </div>
+            <span className={`text-[10px] font-medium ${mood === "Bad" ? "text-orange-500" : "text-slate-400"}`}>Bad</span>
+          </button>
+          
+          {/* Mood 3: Neutral (Okay) */}
+          <button 
+            className="flex flex-col items-center gap-2 group focus:outline-none" 
+            onClick={() => selectMood("Neutral")}
+          >
+            <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 ${mood === "Neutral" ? "bg-yellow-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-yellow-100 group-hover:text-yellow-500"}`}>
+              <span className="material-symbols-outlined text-[32px]">sentiment_neutral</span>
+            </div>
+            <span className={`text-[10px] font-medium ${mood === "Neutral" ? "text-yellow-500" : "text-slate-400"}`}>Okay</span>
+          </button>
+          
+          {/* Mood 4: Good */}
+          <button 
+            className="flex flex-col items-center gap-2 group focus:outline-none" 
+            onClick={() => selectMood("Good")}
+          >
+            <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 ${mood === "Good" ? "bg-blue-500 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-500"}`}>
+              <span className="material-symbols-outlined text-[32px]">sentiment_satisfied</span>
+            </div>
+            <span className={`text-[10px] font-medium ${mood === "Good" ? "text-blue-500" : "text-slate-400"}`}>Good</span>
+          </button>
+          
+          {/* Mood 5: Great */}
+          <button 
+            className="flex flex-col items-center gap-2 group focus:outline-none" 
+            onClick={() => selectMood("Great")}
+          >
+            <div className={`h-12 w-12 rounded-full flex items-center justify-center transition-all duration-300 transform group-hover:-translate-y-1 ${mood === "Great" ? "bg-green-500 text-white ring-2 ring-green-500" : "bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-green-100 group-hover:text-green-500"}`}>
+              <span className="material-symbols-outlined text-[32px]">sentiment_very_satisfied</span>
+            </div>
+            <span className={`text-[10px] font-medium ${mood === "Great" ? "text-green-500" : "text-slate-400"}`}>Great</span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -4,10 +4,11 @@ import * as React from "react";
 import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
-export default function CustomSignUp() {
+export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
   const { isLoaded, signUp, setActive } = useSignUp();
   const [emailAddress, setEmailAddress] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
   const [verifying, setVerifying] = React.useState(false);
@@ -89,99 +90,49 @@ export default function CustomSignUp() {
   // Display email verification form
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 max-w-150 w-full mx-auto">
-        <div className="w-full max-w-md">
-          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header */}
-            <div className="text-center space-y-2">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                <svg
-                  className="w-8 h-8 text-primary-foreground"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Verify Your Email
-              </h1>
-              <p className="text-muted-foreground">
-                Enter the verification code sent to your email.
+      <div className="bg-[#f6f6f8] dark:bg-[#101622] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans" style={{ fontFamily: 'Manrope, sans-serif' }}>
+        <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        
+        <div className="relative flex h-[100dvh] min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-[#101622] shadow-xl">
+           <div className="flex items-center p-4 pb-2 justify-between">
+              <div className="w-12"></div>
+              <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Verification</h2>
+              <div className="flex w-12 items-center justify-end"></div>
+           </div>
+           
+           <div className="px-6 pt-6 pb-2 mt-8">
+              <h1 className="text-[28px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white text-center mb-2">Verify Email</h1>
+              <p className="text-slate-500 dark:text-slate-400 text-base font-medium leading-normal text-center">
+                 Enter the verification code sent to your email.
               </p>
-            </div>
+           </div>
+           
+           <form onSubmit={handleVerify} className="flex flex-col gap-4 px-6 py-8">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 rounded-xl p-4 text-sm mb-4">
+                  {error}
+                </div>
+              )}
+              
+              <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Verification Code</span>
+                  <input 
+                    onChange={(e) => setCode(e.target.value)}
+                    value={code}
+                    disabled={isLoading}
+                    type="text" 
+                    inputMode="numeric"
+                    required
+                    className="flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-0 focus:ring-2 focus:ring-[#2b6cee]/20 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:border-[#2b6cee] h-14 px-4 text-center tracking-widest text-2xl font-mono transition-all disabled:opacity-50" 
+                    placeholder="000000" 
+                  />
+              </label>
 
-            {/* Error Message */}
-            {error && (
-              <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-xl p-4 text-sm animate-in fade-in slide-in-from-top-2">
-                {error}
-              </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleVerify} className="space-y-5">
-              <div className="space-y-2">
-                <label
-                  htmlFor="code"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Verification Code
-                </label>
-                <input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  id="code"
-                  name="code"
-                  type="text"
-                  inputMode="numeric"
-                  disabled={isLoading}
-                  className="w-full px-4 py-3 bg-background/50 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-center text-2xl tracking-widest font-mono"
-                  placeholder="000000"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Verifying...
-                  </>
-                ) : (
-                  "Verify Email"
-                )}
+              <button disabled={isLoading} type="submit" className="mt-6 w-full h-14 bg-[#2b6cee] hover:bg-[#2b6cee]/90 text-white font-bold text-lg rounded-xl shadow-lg shadow-[#2b6cee]/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                  {isLoading ? "Verifying..." : "Verify Code"}
               </button>
-            </form>
-          </div>
+           </form>
         </div>
       </div>
     );
@@ -189,167 +140,88 @@ export default function CustomSignUp() {
 
   // Display sign-up form
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 max-w-150 w-full mx-auto">
-      <div className="w-full max-w-md">
-        <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-3xl shadow-2xl p-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <svg
-                className="w-8 h-8 text-primary-foreground"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Create Account
-            </h1>
-            <p className="text-muted-foreground">
-              Join Mental Pulse and start your journey
-            </p>
-          </div>
+    <div className="bg-[#f6f6f8] dark:bg-[#101622] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans" style={{ fontFamily: 'Manrope, sans-serif' }}>
+      <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      
+      <div className="relative flex h-[100dvh] min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-[#101622] shadow-xl">
+        <div className="flex items-center p-4 pb-2 justify-between sticky top-0 bg-white/90 dark:bg-[#101622]/90 backdrop-blur-sm z-10">
+          <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12 text-slate-900 dark:text-slate-100">Sign Up</h2>
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-xl p-4 text-sm animate-in fade-in slide-in-from-top-2">
-              {error}
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="flex-1 overflow-y-auto">
+          <h1 className="text-3xl font-bold leading-tight px-6 text-left pb-3 pt-6 text-slate-900 dark:text-slate-100">Create an account</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal pb-6 px-6">Start your journey to better mental health today.</p>
+          
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-6 pb-6">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 rounded-xl p-4 text-sm">
+                {error}
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="firstName"
-                  className="text-sm font-medium text-foreground"
-                >
-                  First Name
-                </label>
-                <input
-                  id="firstName"
-                  type="text"
-                  name="firstName"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  disabled={isLoading}
-                  className="w-full px-4 py-3 bg-background/50 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="John"
-                  required
-                />
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal">First Name</label>
+                <div className="relative">
+                  <input required disabled={isLoading} value={firstName} onChange={(e) => setFirstName(e.target.value)} className="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2b6cee] focus:ring-1 focus:ring-[#2b6cee] focus:outline-none h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal transition-all disabled:opacity-50" placeholder="Alex" type="text" />
+                </div>
               </div>
-
-              <div className="space-y-2">
-                <label
-                  htmlFor="lastName"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Last Name
-                </label>
-                <input
-                  id="lastName"
-                  type="text"
-                  name="lastName"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  disabled={isLoading}
-                  className="w-full px-4 py-3 bg-background/50 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Doe"
-                  required
-                />
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal">Last Name</label>
+                <div className="relative">
+                  <input required disabled={isLoading} value={lastName} onChange={(e) => setLastName(e.target.value)} className="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2b6cee] focus:ring-1 focus:ring-[#2b6cee] focus:outline-none h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal transition-all disabled:opacity-50" placeholder="Johnson" type="text" />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-foreground"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                value={emailAddress}
-                onChange={(e) => setEmailAddress(e.target.value)}
-                disabled={isLoading}
-                className="w-full px-4 py-3 bg-background/50 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="you@example.com"
-                required
-              />
+            <div className="flex flex-col gap-2">
+              <label className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal">Email</label>
+              <div className="relative">
+                <input required disabled={isLoading} value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} className="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2b6cee] focus:ring-1 focus:ring-[#2b6cee] focus:outline-none h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal transition-all disabled:opacity-50" placeholder="e.g. alex@example.com" type="email" />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                  <span className="material-symbols-outlined text-[20px]">mail</span>
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-foreground"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                className="w-full px-4 py-3 bg-background/50 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="••••••••"
-                required
-              />
+            <div className="flex flex-col gap-2">
+              <label className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal">Password</label>
+              <div className="relative">
+                <input required disabled={isLoading} value={password} onChange={(e) => setPassword(e.target.value)} className="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2b6cee] focus:ring-1 focus:ring-[#2b6cee] focus:outline-none h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal transition-all disabled:opacity-50" placeholder="Must be at least 8 characters" type={showPassword ? "text" : "password"} />
+                <button onClick={() => setShowPassword(!showPassword)} tabIndex={-1} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2b6cee] transition-colors" type="button">
+                  <span className="material-symbols-outlined text-[20px]">{showPassword ? "visibility" : "visibility_off"}</span>
+                </button>
+              </div>
             </div>
 
-            {/* Clerk's captcha div for bot protection */}
+            <label className="flex items-start gap-3 py-2 cursor-pointer group">
+              <div className="relative flex items-center">
+                <input required className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 checked:bg-[#2b6cee] checked:border-[#2b6cee] transition-all focus:ring-2 focus:ring-[#2b6cee]/20 focus:outline-none" type="checkbox" />
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity">
+                  <span className="material-symbols-outlined text-[16px] font-bold">check</span>
+                </span>
+              </div>
+              <span className="text-sm text-slate-500 dark:text-slate-400 pt-0.5 select-none">I agree to the <a className="text-[#2b6cee] font-medium hover:underline" href="#">Terms of Service</a> and <a className="text-[#2b6cee] font-medium hover:underline" href="#">Privacy Policy</a></span>
+            </label>
+
             <div id="clerk-captcha" />
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Creating account...
-                </>
-              ) : (
-                "Sign Up"
-              )}
+            <button disabled={isLoading} type="submit" className="mt-4 flex w-full items-center justify-center rounded-full bg-[#2b6cee] py-4 px-6 text-base font-bold text-white shadow-lg shadow-[#2b6cee]/30 transition-all hover:bg-[#2b6cee]/90 hover:shadow-[#2b6cee]/40 active:scale-[0.98] disabled:opacity-50">
+               {isLoading ? "Creating account..." : "Create Account"}
             </button>
           </form>
+        </div>
 
-          {/* Footer */}
-          <div className="text-center text-sm text-muted-foreground">
-            <p>Start your mental health journey today</p>
-          </div>
+        <div className="p-8 text-center bg-slate-50 dark:bg-[#101622]/50 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-base text-slate-600 dark:text-slate-400">
+            Already have an account? 
+            {onToggle ? (
+              <button type="button" onClick={onToggle} className="font-bold text-[#2b6cee] hover:text-[#2b6cee]/80 transition-colors ml-1">Log in</button>
+            ) : (
+              <a className="font-bold text-[#2b6cee] hover:text-[#2b6cee]/80 transition-colors ml-1" href="/sign-in">Log in</a>
+            )}
+          </p>
         </div>
       </div>
     </div>

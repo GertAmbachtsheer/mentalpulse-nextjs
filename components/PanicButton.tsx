@@ -130,7 +130,7 @@ export default function PanicButton() {
                         }
                         
                         toast.success("Emergency alert activated!", {
-                            description: "All users have been notified via push notification.",
+                            description: "Your emergency alert has been recorded.",
                             duration: 5000,
                         });
                         await fetchActiveAlert();
@@ -163,47 +163,79 @@ export default function PanicButton() {
     };
 
     return (
-        <section className="mx-2 mt-1 mb-1 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-8 shadow-lg border-2 border-red-200">
-            <div className="flex justify-center items-center mb-6">
-                <button
-                    onClick={handleEmergencyClick}
-                    disabled={isTriggering || activeAlert === undefined}
-                    className={`
-                        relative w-50 h-50 rounded-full
-                        ${activeAlert 
-                            ? 'bg-gradient-to-br from-red-600 via-red-500 to-red-700 hover:shadow-red-500/50 focus:ring-red-400 animate-pulse'
-                            : 'bg-gradient-to-br from-orange-600 via-orange-500 to-orange-700 hover:shadow-orange-500/50 focus:ring-orange-400'
-                        }
-                        shadow-2xl
-                        transform transition-all duration-200
-                        hover:scale-105
-                        active:scale-95
-                        focus:outline-none focus:ring-4
-                        ${isPressed ? 'scale-95' : ''}
-                        ${isTriggering || activeAlert === undefined ? 'opacity-75 cursor-not-allowed' : ''}
-                        group
-                    `}
-                    aria-label={activeAlert ? "Deactivate panic alert" : "Activate panic alert"}
-                >
-                    <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
-                        <div className="text-center">
-                        <div className="text-4xl font-black tracking-wider mb-2">
-                            {activeAlert 
-                            ? (isTriggering ? "PULSE" : "ACTIVE")
-                            : (isTriggering ? "ACTIVE" : "PULSE")
-                            }
-                        </div>
-                        </div>
-                    </div>
-
-                    {/* Inner glow effect */}
-                    <div className="absolute inset-4 rounded-full bg-gradient-to-t from-transparent to-white/20 pointer-events-none"></div>
-                </button>
+        <section className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-text-main dark:text-white">Emergency</h3>
+                {activeAlert && (
+                    <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1 animate-pulse">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Live
+                    </span>
+                )}
             </div>
-            <div className="mt-6 pt-6 border-t-2 border-red-200">
-                <p className="text-xs text-center text-gray-500">
-                This will immediately send out a distress signal
+            <div className="bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-soft relative overflow-hidden">
+                {/* Decorative background element for the card */}
+                {activeAlert ? (
+                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-red-500/10 blur-2xl"></div>
+                ) : (
+                    <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-500/5 blur-2xl"></div>
+                )}
+                
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium text-center">
+                    {activeAlert 
+                        ? "Your emergency alert is active and shared." 
+                        : "Press the button below to send an emergency alert."}
                 </p>
+
+                <div className="flex justify-center items-center my-8">
+                    <button
+                        onClick={handleEmergencyClick}
+                        disabled={isTriggering || activeAlert === undefined}
+                        className={`
+                            relative w-48 h-48 rounded-full
+                            ${activeAlert 
+                                ? 'bg-gradient-to-br from-red-600 via-red-500 to-red-600 focus:ring-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
+                                : 'bg-gradient-to-br from-orange-500 via-orange-400 to-orange-500 focus:ring-orange-400 shadow-[0_10px_30px_rgba(249,115,22,0.3)]'
+                            }
+                            transform transition-all duration-300 ease-out
+                            hover:scale-105
+                            active:scale-[0.98]
+                            focus:outline-none focus:ring-4 focus:ring-offset-4 focus:ring-offset-white dark:focus:ring-offset-surface-dark
+                            ${isPressed ? 'scale-[0.98] shadow-inner' : ''}
+                            ${(isTriggering || activeAlert === undefined) ? 'opacity-80 cursor-not-allowed scale-[0.98] saturate-50' : ''}
+                            group
+                        `}
+                        aria-label={activeAlert ? "Deactivate panic alert" : "Activate panic alert"}
+                    >
+                        {/* Pulse rings for active state */}
+                        {activeAlert && (
+                            <>
+                                <div className="absolute inset-0 rounded-full border-2 border-red-500/50 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
+                                <div className="absolute inset-0 rounded-full border-2 border-red-500/30 animate-[ping_2.5s_cubic-bezier(0,0,0.2,1)_infinite_100ms]"></div>
+                            </>
+                        )}
+
+                        <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
+                            <span className={`material-symbols-outlined text-[48px] mb-2 ${activeAlert ? 'animate-bounce' : ''}`}>
+                                {activeAlert ? 'campaign' : 'emergency'}
+                            </span>
+                            <div className="text-2xl font-black tracking-widest uppercase text-white/95">
+                                {activeAlert 
+                                    ? (isTriggering ? "DEACTIVATING" : "ACTIVE")
+                                    : (isTriggering ? "ACTIVATING" : "PULSE")
+                                }
+                            </div>
+                        </div>
+
+                        {/* Refined inner glass reflection */}
+                        <div className="absolute inset-[3px] rounded-full border top-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none opacity-50 mix-blend-overlay"></div>
+                    </button>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/50">
+                    <p className="text-[11px] text-center text-slate-400 font-medium uppercase tracking-wider">
+                        {activeAlert ? "Tap again to cancel" : "Tap to send an alert"}
+                    </p>
+                </div>
             </div>
         </section>
     );

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { Montserrat, Manrope } from "next/font/google";
 import "./globals.css";
 import Providers from '@/components/Providers';
 
@@ -10,6 +10,11 @@ const APP_DESCRIPTION = "Best Mental Health app in the world!";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
+  subsets: ["latin"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 });
 
@@ -56,7 +61,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${montserrat.variable} antialiased bg-[#EEF2FF]`}>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+      </head>
+      <body className={`${montserrat.variable} ${manrope.variable} antialiased font-sans bg-background-light dark:bg-background-dark text-text-main dark:text-slate-100 flex flex-col min-h-screen`}>
         <Providers>{children}</Providers>
       </body>
     </html>

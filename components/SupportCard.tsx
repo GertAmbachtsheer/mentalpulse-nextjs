@@ -30,55 +30,62 @@ export default function SupportCard() {
   };
 
   return (
-    <section className="mx-2 mt-1 mb-1 bg-white rounded-xl p-6 shadow-sm border border-border/80">
-      <h2 className="text-2xl font-semibold text-center mb-1">Support MentalPulse</h2>
-      <p className="text-center text-sm text-muted-foreground">Help us keep this vital mental health resource free and accessible for all men</p>
-      <div className="flex flex-col justify-around mt-6">
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-text-main dark:text-white">Support the Devs</h3>
+        <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Thank you</span>
+      </div>
+      <div className="bg-white dark:bg-surface-dark rounded-3xl p-5 shadow-soft">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">If this app helps you, consider buying us a coffee to keep the servers running!</p>
+        
         <TabGroup className="w-full">
-          <TabList className="flex justify-around rounded-md">
-            <Tab className="w-full text-center rounded-md data-selected:text-gray-900 data-selected:font-bold text-md p-2 data-selected:shadow-sm cursor-pointer">Monthly Support</Tab>
-            <Tab className="w-full text-center rounded-md data-selected:text-gray-900 data-selected:font-bold text-md p-2 data-selected:shadow-sm cursor-pointer">One-Time Gift</Tab>
+          <TabList className="flex justify-around rounded-xl bg-slate-50 dark:bg-slate-800 p-1 mb-4">
+            <Tab className="w-full text-center rounded-lg data-[selected]:bg-white data-[selected]:text-primary data-[selected]:shadow-sm data-[selected]:font-bold text-sm text-slate-500 font-medium p-2 cursor-pointer transition-all focus:outline-none">Monthly</Tab>
+            <Tab className="w-full text-center rounded-lg data-[selected]:bg-white data-[selected]:text-primary data-[selected]:shadow-sm data-[selected]:font-bold text-sm text-slate-500 font-medium p-2 cursor-pointer transition-all focus:outline-none">One-Time</Tab>
           </TabList>
+          
           <TabPanels>
             <TabPanel>
-              <div className="flex flex-col gap-2 mt-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {support?.filter((item: any) => item.type === "monthly")?.map((item: any) => (
-                  <div key={item.id} className={`flex flex-col gap-2 border border-gray-400 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 ${selectedSupport?.id === item.id ? "border-2 border-lime-500" : ""}`} onClick={() => handleSupport(item)}>
-                    <div className="flex justify-between">
-                      <div className="flex flex-col">
-                        <h3 className="text-lg font-semibold">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                      </div>
-                      <div className="flex flex-col text-right">
-                        <p className="text-xl font-semibold">R{item.price}</p>
-                        <p className="text-sm text-muted-foreground">Per Month</p>
-                      </div>
+                  <button 
+                    key={item.id} 
+                    className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-3 transition-all ${selectedSupport?.id === item.id ? "border-primary bg-primary/5" : "border-slate-100 dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5"}`} 
+                    onClick={() => handleSupport(item)}
+                  >
+                    <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <span className="material-symbols-outlined text-[20px]">volunteer_activism</span>
                     </div>
-                    <div dangerouslySetInnerHTML={{ __html: item.benefits }} className="text-sm text-muted-foreground"/>
-                  </div>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">R{item.price}</span>
+                    <span className="text-[10px] text-slate-400 truncate w-full text-center">{item.title}</span>
+                  </button>
                 ))}
               </div>
             </TabPanel>
+            
             <TabPanel>
-              <div className="flex flex-col gap-2">
-                <div className="text-center my-3">
-                  <h2 className="text-lg font-semibold">Make a One-Time Contribution</h2>
-                  <p className="text-sm text-muted-foreground">Every contribution makes a difference in someone's mental health journey</p>
+              <div className="flex flex-col gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {support?.filter((item: any) => item.type === "once-off")?.map((item: any) => (
+                    <button 
+                      key={item.id} 
+                      className={`flex flex-col items-center justify-center gap-1 rounded-xl border p-3 transition-all ${selectedSupport?.id === item.id ? "border-primary bg-primary/5" : "border-slate-100 dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5"}`} 
+                      onClick={() => handleSupport(item)}
+                    >
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200">R{item.price}</span>
+                      <span className="text-[10px] text-slate-400">{item.title}</span>
+                    </button>
+                  ))}
                 </div>
-                {support?.filter((item: any) => item.type === "once-off")?.map((item: any) => (
-                  <div key={item.id} className={`flex flex-col border border-gray-300 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 text-left ${selectedSupport?.id === item.id ? "border-2 border-lime-500" : ""}`} onClick={() => handleSupport(item)}>
-                    <p className="text-lg font-semibold">R{item.price}</p>
-                    <h3 className="text-sm text-muted-foreground">{item.title}</h3>
-                  </div>
-                ))}
-                <p className="text-center text-sm text-muted-foreground my-2">or</p>
-                <div className="flex items-center border border-gray-300 rounded-xl p-2 shadow-sm hover:shadow-md transition-all cursor-pointer transition-200 text-left">
-                  <label
-                    htmlFor="amount"
-                    className="text-sm font-semibold text-muted-foreground text-nowrap mr-2"
-                  >
-                    Custom Amount: R
-                  </label>
+                
+                <div className="mt-2 text-center flex items-center gap-2">
+                  <span className="h-px flex-1 bg-slate-100 dark:bg-slate-700"></span>
+                  <span className="text-xs text-slate-400 font-medium">OR</span>
+                  <span className="h-px flex-1 bg-slate-100 dark:bg-slate-700"></span>
+                </div>
+                
+                <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all bg-slate-50 dark:bg-slate-800">
+                  <span className="text-sm font-semibold text-slate-500 pl-3">R</span>
                   <input
                     onChange={(e) => { setOwnAmount(e.target.value); setSelectedSupport(null); }}
                     id="amount"
@@ -87,24 +94,37 @@ export default function SupportCard() {
                     inputMode="numeric"
                     value={ownAmount}
                     onClick={() => setSelectedSupport(null)}
-                    className="w-full px-1 py-1 bg-background/50 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm tracking-widest font-mono"
-                    placeholder="Enter Amount"
-                    required
+                    className="w-full px-2 py-2 bg-transparent border-none focus:outline-none text-sm font-semibold text-slate-700 dark:text-slate-200"
+                    placeholder="Custom Amount"
                   />
                 </div>
               </div>
             </TabPanel>
           </TabPanels>
         </TabGroup>
-        <div className="flex justify-center mt-6">
-          <button className="w-full bg-lime-500 text-white font-semibold py-2 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer transition-200">Support</button>
+        
+        <div className="mt-5">
+          <button className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-xl shadow-md shadow-primary/30 transition-all flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">favorite</span>
+            Support Now
+          </button>
         </div>
-        <div className="flex flex-col justify-center mt-6 gap-1">
-          <p className="flex items-center gap-1 text-sm text-muted-foreground"><RiSecurePaymentLine />Secure payments</p>
-          <p className="flex items-center gap-1 text-sm text-muted-foreground"><LuUsers />Community funded</p>
-          <p className="flex items-center gap-1 text-sm text-muted-foreground"><FaRegHeart />100% for mental health</p>
+        
+        <div className="flex items-center justify-center mt-5 gap-4">
+          <div className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <span className="material-symbols-outlined text-[14px]">lock</span>
+            Secure
+          </div>
+          <div className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <span className="material-symbols-outlined text-[14px]">groups</span>
+            Community
+          </div>
+          <div className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+            <span className="material-symbols-outlined text-[14px]">favorite</span>
+            100% Impact
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
 import AuthToggle from "@/components/AuthToggle";
-import CustomUserButton from "@/components/CustomUserButton";
 import { Suspense } from "react";
 import Loading from "./loading";
 import MoodTracker from "@/components/MoodTracker";
@@ -11,6 +10,8 @@ import SupportCard from "@/components/SupportCard";
 import NotificationCenter from "@/components/NotificationCenter";
 import PanicButton from "@/components/PanicButton";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import DashboardHeader from "@/components/DashboardHeader";
+import BottomNav from "@/components/BottomNav";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
@@ -24,23 +25,37 @@ export default function Home() {
 
   return (
     <Suspense fallback={<Loading />}>
-      <div className="min-h-screen bg-gray-100 flex flex-col h-screen max-w-150 w-full mx-auto">
-        {user ? (
-          <>
-            <nav className="flex w-full h-16 justify-between items-center border-b border-border/80 p-4 shadow-sm bg-white rounded-b-xl">
-              <h1 className="text-2xl font-bold">Mental Pulse</h1>
-              <CustomUserButton />
-            </nav>
-            <NotificationCenter />
-            <LocationToggleCard />
+      {user ? (
+        <div className="mx-auto w-full max-w-md bg-background-light dark:bg-background-dark flex flex-col relative shadow-2xl min-h-screen overflow-hidden">
+          <DashboardHeader />
+          <NotificationCenter />
+          <main className="flex-1 overflow-y-auto px-6 pb-24 no-scrollbar">
+            <div className="mt-4 mb-4">
+              <PanicButton />
+            </div>
             <MoodTracker />
+            
+            <div className="relative mb-8 overflow-hidden rounded-3xl bg-primary p-6 shadow-lg shadow-primary/20">
+              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
+              <div className="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-blue-400/20 blur-2xl"></div>
+              <span className="mb-3 block text-white/80 text-xs font-semibold tracking-wider uppercase">Daily Inspiration</span>
+              <p className="mb-4 text-xl font-medium leading-relaxed text-white">"Happiness can be found even in the darkest of times, if one only remembers to turn on the light."</p>
+              <div className="flex items-center gap-2">
+                <span className="h-px w-8 bg-white/40"></span>
+                <span className="text-sm font-light text-white/90">Albus Dumbledore</span>
+              </div>
+            </div>
+
             <SupportCard />
             <Toaster />
-          </>
-        ) : (
+          </main>
+          <BottomNav />
+        </div>
+      ) : (
+        <div className="min-h-screen bg-gray-100 flex flex-col h-screen max-w-150 w-full mx-auto">
           <AuthToggle />
-        )}
-      </div>
+        </div>
+      )}
     </Suspense>
   );
 }
