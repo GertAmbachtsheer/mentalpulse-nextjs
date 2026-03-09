@@ -105,37 +105,20 @@ export function ResourcesMoodChart() {
               : "Terrible"
       : "No Data";
 
-  // Calculate previous week average to show trend
-  const prevWeekDates = weekDates.map(d => {
-    const prevD = new Date(d.date);
-    prevD.setDate(prevD.getDate() - 7);
-    return prevD;
-  });
-
-  const prevWeekData = prevWeekDates.map((date) => {
-    const moodEntries = userMoods.filter((m) =>
-      isSameDay(new Date(m.created_at), date)
-    );
-    const moodEntry = moodEntries.length > 0 ? moodEntries[0] : null;
-    const mood = moodEntry?.mood as MoodKey | undefined;
-    return mood ? MOOD_CONFIG[mood].value : null;
-  });
-
-  const validPrevValues = prevWeekData.filter((v) => v !== null) as number[];
-  const prevWeeklyAvg =
-    validPrevValues.length > 0
-      ? validPrevValues.reduce((s, d) => s + d, 0) / validPrevValues.length
-      : null;
+  // Calculate intra-week trend: compare first logged mood this week to the most recent
+  const loggedThisWeek = chartData.filter((d) => d.value !== null);
+  const firstMoodValue = loggedThisWeek.length > 0 ? loggedThisWeek[0].value : null;
+  const lastMoodValue = loggedThisWeek.length > 0 ? loggedThisWeek[loggedThisWeek.length - 1].value : null;
 
   let trendIcon = null;
   let trendText = "";
   let trendColorClass = "text-gray-500 bg-gray-100 dark:bg-gray-800";
   let trendIconColor = "text-gray-500";
 
-  if (weeklyAvg !== null && prevWeeklyAvg !== null) {
-      const diff = weeklyAvg - prevWeeklyAvg;
-      const percentChange = ((diff / 4) * 100).toFixed(0);
-      
+  if (firstMoodValue !== null && lastMoodValue !== null && loggedThisWeek.length > 1) {
+      const diff = lastMoodValue - firstMoodValue;
+      const percentChange = Math.abs((diff / 4) * 100).toFixed(0);
+
       if (diff > 0) {
           trendIcon = <MdTrendingUp className="text-sm" />;
           trendText = `+${percentChange}%`;
@@ -143,7 +126,7 @@ export function ResourcesMoodChart() {
           trendIconColor = "text-green-500";
       } else if (diff < 0) {
           trendIcon = <MdTrendingDown className="text-sm" />;
-          trendText = `${percentChange}%`;
+          trendText = `-${percentChange}%`;
           trendColorClass = "bg-red-50 dark:bg-red-900/20";
           trendIconColor = "text-red-500";
       } else {

@@ -6,6 +6,7 @@ import Loading from "@/app/loading";
 import { Toaster } from "@/components/ui/sonner";
 import BottomNav from "@/components/BottomNav";
 import ProfileLocationToggleCard from "@/components/ProfileLocationToggleCard";
+import PersonalInformationModal from "@/components/PersonalInformationModal";
 import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
 import { useLocationStore } from "@/store/locationStore";
@@ -18,6 +19,7 @@ export default function ProfilePage() {
   const role = useUserStore((s) => s.role);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [personalInfoOpen, setPersonalInfoOpen] = useState(false);
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -93,7 +95,7 @@ export default function ProfilePage() {
             <div className="mx-4 mb-4 bg-white dark:bg-[#1a2230] rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800">
               <h3 className="text-sm font-bold text-text-sub dark:text-slate-400 mb-2 px-2 uppercase tracking-wider">Account</h3>
               <div className="flex flex-col">
-                <button className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors text-text-main dark:text-gray-100">
+                <button onClick={() => setPersonalInfoOpen(true)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors text-text-main dark:text-gray-100">
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-text-sub">person</span>
                     <span className="font-medium text-[15px]">Personal Information</span>
@@ -145,6 +147,7 @@ export default function ProfilePage() {
           
           <BottomNav />
           <Toaster />
+          <PersonalInformationModal open={personalInfoOpen} onClose={() => setPersonalInfoOpen(false)} />
         </div>
       ) : (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
