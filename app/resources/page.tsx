@@ -4,7 +4,6 @@ import AuthToggle from "@/components/AuthToggle";
 import CustomUserButton from "@/components/CustomUserButton";
 import { Suspense } from "react";
 import Loading from "../loading";
-import ProfileLocationToggleCard from "@/components/ProfileLocationToggleCard";
 import { Toaster } from "@/components/ui/sonner";
 import { ResourcesMoodChart } from "@/components/ResourcesMoodChart";
 import { ResourcesMoodCalendar } from "@/components/ResourcesMoodCalendar";

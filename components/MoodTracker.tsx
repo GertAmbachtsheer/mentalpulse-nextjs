@@ -70,9 +70,8 @@ export default function MoodTracker() {
 
   return (
     <div className="mb-8">
-      <div className="mb-4 flex items-end justify-between">
-        <h2 className="text-2xl font-bold text-text-main dark:text-white tracking-tight">How are you<br/>feeling today?</h2>
-        <a className="text-xs font-semibold text-primary mb-1 hover:underline" href="#">History</a>
+      <div className="mb-4">
+        <h2 className="text-2xl text-center font-bold text-text-main dark:text-white tracking-tight">How are you feeling today?</h2>
       </div>
       <div className="bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-soft">
         <div className="flex justify-between items-center gap-2">

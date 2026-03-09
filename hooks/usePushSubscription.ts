@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useUser } from '@clerk/nextjs';
+import { useLocationStore } from '@/store/locationStore';
 
 /**
  * Converts a base64 URL-safe string to a Uint8Array for the VAPID key.
@@ -23,10 +24,11 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
  */
 export function usePushSubscription() {
   const { user } = useUser();
+  const notificationsEnabled = useLocationStore((s) => s.notificationsEnabled);
   const subscribed = useRef(false);
 
   useEffect(() => {
-    if (!user?.id || subscribed.current) return;
+    if (!user?.id || subscribed.current || !notificationsEnabled) return;
 
     const subscribe = async () => {
       try {
@@ -86,5 +88,5 @@ export function usePushSubscription() {
     };
 
     subscribe();
-  }, [user?.id]);
+  }, [user?.id, notificationsEnabled]);
 }

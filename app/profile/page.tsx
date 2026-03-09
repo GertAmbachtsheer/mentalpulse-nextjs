@@ -1,35 +1,40 @@
 "use client";
 
 import { useUser, SignOutButton } from "@clerk/nextjs";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import Loading from "@/app/loading";
 import { Toaster } from "@/components/ui/sonner";
 import BottomNav from "@/components/BottomNav";
 import ProfileLocationToggleCard from "@/components/ProfileLocationToggleCard";
 import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
+import { useLocationStore } from "@/store/locationStore";
+import { useUserStore } from "@/store/userStore";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { notificationsEnabled, setNotificationsEnabled, isLocationEnabled, setLocationEnabled } = useLocationStore();
+  const role = useUserStore((s) => s.role);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  useEffect(() => {
-    // Basic theme detection logic
-    if (document.documentElement.classList.contains('dark')) {
-      setTheme('dark');
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingPhoto(true);
+    try {
+      await user.setProfileImage({ file });
+      toast.success("Profile photo updated");
+    } catch {
+      toast.error("Failed to update photo");
+    } finally {
+      setUploadingPhoto(false);
+      // Reset so same file can be re-selected
+      e.target.value = "";
     }
-  }, []);
+  }
 
-  const toggleTheme = () => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('dark');
-      setTheme('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      setTheme('light');
-    }
-  };
 
   if (!isLoaded) {
     return <Loading />;
@@ -58,12 +63,30 @@ export default function ProfilePage() {
                     src={user?.imageUrl || "https://placeholder.com/150"}
                   />
                 </div>
-                <button className="h-10 w-10 flex items-center justify-center absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full shadow-md border-2 border-white dark:border-background-dark hover:bg-primary-hover transition-colors">
-                  <span className="material-symbols-outlined text-[8px]">edit</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoChange}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="h-10 w-10 flex items-center justify-center absolute bottom-0 right-0 p-2 bg-primary text-white rounded-full shadow-md border-2 border-white dark:border-background-dark hover:bg-primary-hover transition-colors disabled:opacity-60"
+                >
+                  <span className="material-symbols-outlined text-[8px]">
+                    {uploadingPhoto ? "hourglass_empty" : "edit"}
+                  </span>
                 </button>
               </div>
               <h2 className="text-2xl font-bold text-text-main dark:text-white">{user?.fullName || "User"}</h2>
               <p className="text-sm font-medium text-text-sub dark:text-slate-400">{user?.primaryEmailAddress?.emailAddress}</p>
+              {role && (
+                <span className="mt-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-300">
+                  {role}
+                </span>
+              )}
             </div>
 
             {/* Profile Settings List */}
@@ -100,10 +123,10 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-xl text-text-main dark:text-gray-100">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-text-sub">dark_mode</span>
-                    <span className="font-medium text-[15px]">Dark Mode</span>
+                    <span className="material-symbols-outlined text-text-sub">location_on</span>
+                    <span className="font-medium text-[15px]">Location Services</span>
                   </div>
-                  <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
+                  <Switch checked={isLocationEnabled} onCheckedChange={setLocationEnabled} />
                 </div>
               </div>
             </div>
