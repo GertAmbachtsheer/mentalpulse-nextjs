@@ -11,10 +11,7 @@ export async function GET() {
 
   const client = await clerkClient();
   const currentUser = await client.users.getUser(userId);
-  const role =
-    (currentUser.unsafeMetadata?.role as string) ??
-    (currentUser.privateMetadata?.role as string) ??
-    "user";
+  const role = (currentUser.unsafeMetadata?.role as string) ?? "user";
 
   if (role !== "admin") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -34,6 +31,35 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ alerts: data ?? [] });
+  const alerts = data ?? [];
+
+  const allUserIds = [
+    ...new Set([
+      ...alerts.map((a: any) => a.user_id),
+      ...alerts.map((a: any) => a.respondee),
+    ].filter(Boolean)),
+  ];
+
+  let nameMap: Record<string, { first_name: string | null; last_name: string | null }> = {};
+  if (allUserIds.length > 0) {
+    const { data: usersData } = await supabase
+      .from("users")
+      .select("user_id, first_name, last_name")
+      .in("user_id", allUserIds);
+
+    for (const u of usersData ?? []) {
+      nameMap[u.user_id] = { first_name: u.first_name ?? null, last_name: u.last_name ?? null };
+    }
+  }
+
+  const enrichedAlerts = alerts.map((a: any) => ({
+    ...a,
+    user_first_name: nameMap[a.user_id]?.first_name ?? null,
+    user_last_name: nameMap[a.user_id]?.last_name ?? null,
+    respondee_first_name: a.respondee ? (nameMap[a.respondee]?.first_name ?? null) : null,
+    respondee_last_name: a.respondee ? (nameMap[a.respondee]?.last_name ?? null) : null,
+  }));
+
+  return NextResponse.json({ alerts: enrichedAlerts });
 }
 

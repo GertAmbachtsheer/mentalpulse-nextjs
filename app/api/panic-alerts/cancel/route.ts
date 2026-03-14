@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dismissPanicAlert, getPanicAlertById, getUserPushSubscriptions, deletePushSubscription } from '@/lib/supabaseCalls';
-import { sendPushToUser } from '@/lib/webPush';
+import { dismissPanicAlert, getPanicAlertById } from '@/lib/supabaseCalls';
+import { broadcastAlertEvent } from '@/lib/alertBroadcast';
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,24 +28,7 @@ export async function POST(req: NextRequest) {
     // 2. Dismiss the alert in DB
     await dismissPanicAlert(alertId);
 
-    // 3. If there is a responder, send them a push notification
-    if (alert.respondee) {
-      try {
-        await sendPushToUser(alert.respondee, {
-          title: 'Alert Cancelled',
-          body: 'The user has cancelled the emergency alert.',
-          icon: '/icon512_rounded.png',
-          badge: '/icon512_rounded.png',
-          data: {
-            type: 'alert-cancelled',
-            alertId,
-          },
-        });
-      } catch (pushError) {
-        console.error('[Cancel Alert] Error sending push to responder:', pushError);
-        // Continue execution even if push fails
-      }
-    }
+    broadcastAlertEvent('alert:cancelled', { alertId });
 
     return NextResponse.json({ success: true });
   } catch (error) {

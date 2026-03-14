@@ -7,6 +7,8 @@ import { AdminUsersSection } from "@/components/admin/AdminUsersSection";
 import { AdminAlertsSection } from "@/components/admin/AdminAlertsSection";
 import { AdminMoodsSection } from "@/components/admin/AdminMoodsSection";
 import { AdminNotificationsSection } from "@/components/admin/AdminNotificationsSection";
+import { AdminDashboardSection } from "@/components/admin/AdminDashboardSection";
+import { AlertLocationModal } from "@/components/admin/AlertLocationModal";
 
 type AdminUser = {
   id: string;
@@ -20,12 +22,16 @@ type AdminUser = {
 type PanicAlert = {
   id: string;
   user_id: string;
+  user_first_name?: string | null;
+  user_last_name?: string | null;
   latitude: string;
   longitude: string;
   active: boolean;
   timestamp: number;
   created_at: string;
   respondee?: string | null;
+  respondee_first_name?: string | null;
+  respondee_last_name?: string | null;
 };
 
 export default function AdminDashboardPage() {
@@ -35,7 +41,7 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeSection, setActiveSection] = useState<"users" | "moods" | "alerts" | "notifications">("users");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "users" | "moods" | "alerts" | "notifications">("dashboard");
 
   const [alerts, setAlerts] = useState<PanicAlert[]>([]);
   const [alertsLoading, setAlertsLoading] = useState(false);
@@ -83,7 +89,7 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    if (activeSection !== "alerts" || alertsLoaded || alertsLoading) return;
+    if (alertsLoaded || alertsLoading) return;
 
     const loadAlerts = async () => {
       try {
@@ -117,7 +123,48 @@ export default function AdminDashboardPage() {
     };
 
     loadAlerts();
-  }, [activeSection, isLoaded, isSignedIn, alertsLoaded, alertsLoading, router, signOut]);
+  }, [isLoaded, isSignedIn, alertsLoaded, alertsLoading, router, signOut]);
+
+  // SSE subscription for real-time alert updates
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+
+    const es = new EventSource("/api/admin/alerts/stream");
+
+    es.addEventListener("alert:triggered", (e) => {
+      const newAlert: PanicAlert = JSON.parse(e.data);
+      setAlerts((prev) => {
+        const exists = prev.some((a) => a.id === newAlert.id);
+        return exists ? prev : [newAlert, ...prev];
+      });
+    });
+
+    es.addEventListener("alert:cancelled", (e) => {
+      const { alertId } = JSON.parse(e.data);
+      setAlerts((prev) =>
+        prev.map((a) => (a.id === alertId ? { ...a, active: false } : a))
+      );
+    });
+
+    es.addEventListener("alert:responded", (e) => {
+      const patch = JSON.parse(e.data);
+      setAlerts((prev) =>
+        prev.map((a) =>
+          a.id === patch.alertId
+            ? {
+                ...a,
+                active: false,
+                respondee: patch.respondee,
+                respondee_first_name: patch.respondee_first_name,
+                respondee_last_name: patch.respondee_last_name,
+              }
+            : a
+        )
+      );
+    });
+
+    return () => es.close();
+  }, [isLoaded, isSignedIn]);
 
   const handleOpenLocation = (alert: PanicAlert) => {
     setSelectedAlert(alert);
@@ -155,6 +202,17 @@ export default function AdminDashboardPage() {
             </p>
           </div>
           <nav className="flex-1 py-4 space-y-1">
+            <button
+              onClick={() => setActiveSection("dashboard")}
+              className={`w-full flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-left transition-colors ${
+                activeSection === "dashboard"
+                  ? "bg-[#2b6cee]/10 text-[#1c50b4] dark:text-[#86a9ff]"
+                  : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">dashboard</span>
+              <span>Dashboard</span>
+            </button>
             <button
               onClick={() => setActiveSection("users")}
               className={`w-full flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-left transition-colors ${
@@ -216,12 +274,14 @@ export default function AdminDashboardPage() {
               </button>
               <div>
                 <h1 className="text-lg font-semibold tracking-[-0.02em]">
+                  {activeSection === "dashboard" && "Dashboard"}
                   {activeSection === "users" && "Users"}
                   {activeSection === "moods" && "Moods"}
                   {activeSection === "alerts" && "Alerts"}
                   {activeSection === "notifications" && "Notifications"}
                 </h1>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+                  {activeSection === "dashboard" && "Overview of current activity."}
                   {activeSection === "users" && "View and manage registered users."}
                   {activeSection === "moods" && "Coming soon: review mood data and trends."}
                   {activeSection === "alerts" && "Review all panic alerts raised in the app."}
@@ -232,6 +292,15 @@ export default function AdminDashboardPage() {
           </header>
 
           <main className="flex-1 overflow-y-auto px-4 md:px-6 py-6 no-scrollbar">
+            {activeSection === "dashboard" && (
+              <AdminDashboardSection
+                alerts={alerts}
+                alertsLoading={alertsLoading}
+                alertsError={alertsError}
+                onOpenLocation={handleOpenLocation}
+              />
+            )}
+
             {activeSection === "users" && (
               <AdminUsersSection users={users} isLoading={isLoading} error={error} />
             )}
@@ -241,10 +310,7 @@ export default function AdminDashboardPage() {
                 alerts={alerts}
                 alertsLoading={alertsLoading}
                 alertsError={alertsError}
-                showLocationModal={showLocationModal}
-                selectedAlert={selectedAlert}
                 onOpenLocation={handleOpenLocation}
-                onCloseLocation={handleCloseLocation}
               />
             )}
 
@@ -254,6 +320,10 @@ export default function AdminDashboardPage() {
           </main>
         </div>
       </div>
+
+      {showLocationModal && selectedAlert && (
+        <AlertLocationModal alert={selectedAlert} onClose={handleCloseLocation} />
+      )}
     </div>
   );
 }

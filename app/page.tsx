@@ -4,20 +4,14 @@ import AuthToggle from "@/components/AuthToggle";
 import { Suspense } from "react";
 import Loading from "./loading";
 import MoodTracker from "@/components/MoodTracker";
-import LocationToggleCard from "@/components/LocationToggleCard";
 import { Toaster } from "@/components/ui/sonner";
 import SupportCard from "@/components/SupportCard";
-import NotificationCenter from "@/components/NotificationCenter";
 import PanicButton from "@/components/PanicButton";
-import { usePushSubscription } from "@/hooks/usePushSubscription";
 import DashboardHeader from "@/components/DashboardHeader";
 import BottomNav from "@/components/BottomNav";
 
 export default function Home() {
   const { user, isLoaded } = useUser();
-  
-  // Subscribe to Web Push notifications when authenticated
-  usePushSubscription();
   
   if (!isLoaded) {
     return <Loading />;
@@ -28,7 +22,6 @@ export default function Home() {
       {user ? (
         <div className="mx-auto w-full max-w-md bg-background-light dark:bg-background-dark flex flex-col relative shadow-2xl min-h-screen overflow-hidden">
           <DashboardHeader />
-          <NotificationCenter />
           <main className="flex-1 overflow-y-auto px-6 pb-24 no-scrollbar">
             <div className="mt-4 mb-4">
               <PanicButton />

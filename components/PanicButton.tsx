@@ -1,24 +1,18 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { getUserActivePanicAlert, dismissPanicAlert } from "@/lib/supabaseCalls";
-import { usePanicAlertStore } from "@/store/panicAlertStore";
+import { getUserActivePanicAlert } from "@/lib/supabaseCalls";
 import { toast } from "sonner";
 
 export default function PanicButton() {
-    const router = useRouter();
     const { user } = useUser();
     const [isPressed, setIsPressed] = useState(false);
     const [isTriggering, setIsTriggering] = useState(false);
     const [activeAlert, setActiveAlert] = useState<any | null | undefined>(undefined);
-    const { activeResponseAlert, setActiveResponseAlert, clearActiveResponseAlert } = usePanicAlertStore();
 
-    // Fetch active alert
     const fetchActiveAlert = useCallback(async () => {
-        // Don't poll if user is responding to someone else
-        if (!user?.id || activeResponseAlert) return;
+        if (!user?.id) return;
         try {
             const data = await getUserActivePanicAlert(user.id);
             setActiveAlert(data);
@@ -26,140 +20,87 @@ export default function PanicButton() {
             console.error("Error fetching active alert:", err);
             setActiveAlert(null);
         }
-    }, [user?.id, activeResponseAlert]);
+    }, [user?.id]);
 
     useEffect(() => {
         fetchActiveAlert();
     }, [fetchActiveAlert]);
 
-    // Poll for responses to active alert
-    useEffect(() => {
-        if (!activeAlert || !user?.id || activeResponseAlert) return;
-
-        const pollForResponse = async () => {
-            try {
-                const res = await fetch('/api/panic-alerts/active-response', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: user.id }),
-                });
-                const data = await res.json();
-
-                if (data.alert && data.alert.responderUserId) {
-                    // Someone responded! Navigate to tracking page
-                    setActiveResponseAlert({
-                        alertId: data.alert.id,
-                        creatorUserId: data.alert.creatorUserId,
-                        responderUserId: data.alert.responderUserId,
-                        creatorLatitude: data.alert.creatorLatitude,
-                        creatorLongitude: data.alert.creatorLongitude,
-                        responderLatitude: data.alert.responderLatitude || '',
-                        responderLongitude: data.alert.responderLongitude || '',
-                    });
-                    router.push('/tracking');
-
-                    toast.success("Someone is coming to help!", {
-                        description: "A responder is on their way to your location.",
-                        duration: 5000,
-                    });
-
-                    // Re-fetch to update button state
-                    await fetchActiveAlert();
-                }
-            } catch (err) {
-                console.error("Error polling for response:", err);
-            }
-        };
-
-        const interval = setInterval(pollForResponse, 10000);
-        return () => clearInterval(interval);
-    }, [activeAlert, user?.id, activeResponseAlert, setActiveResponseAlert, fetchActiveAlert]);
-    
     const handleEmergencyClick = async () => {
         if (isTriggering) return;
 
-        // Wait for query to load
-        if (activeAlert === undefined) {
-            console.log("Query still loading, please wait...");
-            return;
-        }
-        
+        if (activeAlert === undefined) return;
+
         setIsPressed(true);
         setIsTriggering(true);
-        
-        // If there's an active alert, dismiss it
+
+        // Cancel active alert
         if (activeAlert) {
-            await dismissPanicAlert(activeAlert.id);
-            clearActiveResponseAlert();
-            toast.success("Emergency alert deactivated", {
-                description: "Your panic alert has been turned off.",
-                duration: 3000,
-            });
+            try {
+                await fetch('/api/panic-alerts/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alertId: activeAlert.id, userId: user?.id }),
+                });
+                toast.success("Emergency alert deactivated", {
+                    description: "Your panic alert has been turned off.",
+                    duration: 3000,
+                });
+            } catch (err) {
+                console.error("Error cancelling alert:", err);
+                toast.error("Failed to cancel alert");
+            }
             setIsTriggering(false);
             setTimeout(() => setIsPressed(false), 300);
             await fetchActiveAlert();
             return;
         }
 
-        try {
-            // Get current location
-            if (!navigator.geolocation) {
-                toast.error("Geolocation is not supported by your browser");
-                setIsTriggering(false);
-                setTimeout(() => setIsPressed(false), 300);
-                return;
-            }
-            
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    try {
-                        // Call the server-side trigger endpoint 
-                        // This creates the alert AND sends Web Push to all users
-                        const response = await fetch('/api/panic-alerts/trigger', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                userId: user?.id,
-                                latitude: position.coords.latitude.toString(),
-                                longitude: position.coords.longitude.toString(),
-                            }),
-                        });
-
-                        if (!response.ok) {
-                            throw new Error('Failed to trigger panic alert');
-                        }
-                        
-                        toast.success("Emergency alert activated!", {
-                            description: "Your emergency alert has been recorded.",
-                            duration: 5000,
-                        });
-                        await fetchActiveAlert();
-                    } catch (error) {
-                        console.error('Error triggering panic alert:', error);
-                        toast.error("Failed to send emergency alert");
-                    } finally {
-                        setIsTriggering(false);
-                        setTimeout(() => setIsPressed(false), 300);
-                    }
-                },
-                (error) => {
-                    toast.error("Unable to get your location", {
-                        description: "Please enable location services and try again.",
-                    });
-                    setIsTriggering(false);
-                    setTimeout(() => setIsPressed(false), 300);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0,
-                }
-            );
-        } catch (error) {
-            toast.error("An error occurred");
+        // Trigger new alert
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
             setIsTriggering(false);
             setTimeout(() => setIsPressed(false), 300);
+            return;
         }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const response = await fetch('/api/panic-alerts/trigger', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: user?.id,
+                            latitude: position.coords.latitude.toString(),
+                            longitude: position.coords.longitude.toString(),
+                        }),
+                    });
+
+                    if (!response.ok) throw new Error('Failed to trigger panic alert');
+
+                    toast.success("Emergency alert activated!", {
+                        description: "Your emergency alert has been recorded.",
+                        duration: 5000,
+                    });
+                    await fetchActiveAlert();
+                } catch (error) {
+                    console.error('Error triggering panic alert:', error);
+                    toast.error("Failed to send emergency alert");
+                } finally {
+                    setIsTriggering(false);
+                    setTimeout(() => setIsPressed(false), 300);
+                }
+            },
+            () => {
+                toast.error("Unable to get your location", {
+                    description: "Please enable location services and try again.",
+                });
+                setIsTriggering(false);
+                setTimeout(() => setIsPressed(false), 300);
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
     };
 
     return (
@@ -173,16 +114,15 @@ export default function PanicButton() {
                 )}
             </div>
             <div className="bg-white dark:bg-surface-dark rounded-3xl p-6 shadow-soft relative overflow-hidden">
-                {/* Decorative background element for the card */}
                 {activeAlert ? (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-red-500/10 blur-2xl"></div>
                 ) : (
                     <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-500/5 blur-2xl"></div>
                 )}
-                
+
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium text-center">
-                    {activeAlert 
-                        ? "Your emergency alert is active and shared." 
+                    {activeAlert
+                        ? "Your emergency alert is active and shared."
                         : "Press the button below to send an emergency alert."}
                 </p>
 
@@ -192,7 +132,7 @@ export default function PanicButton() {
                         disabled={isTriggering || activeAlert === undefined}
                         className={`
                             relative w-48 h-48 rounded-full
-                            ${activeAlert 
+                            ${activeAlert
                                 ? 'bg-gradient-to-br from-red-600 via-red-500 to-red-600 focus:ring-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
                                 : 'bg-gradient-to-br from-orange-500 via-orange-400 to-orange-500 focus:ring-orange-400 shadow-[0_10px_30px_rgba(249,115,22,0.3)]'
                             }
@@ -206,7 +146,6 @@ export default function PanicButton() {
                         `}
                         aria-label={activeAlert ? "Deactivate panic alert" : "Activate panic alert"}
                     >
-                        {/* Pulse rings for active state */}
                         {activeAlert && (
                             <>
                                 <div className="absolute inset-0 rounded-full border-2 border-red-500/50 animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]"></div>
@@ -219,14 +158,13 @@ export default function PanicButton() {
                                 {activeAlert ? 'campaign' : 'emergency'}
                             </span>
                             <div className="text-2xl font-black tracking-widest uppercase text-white/95">
-                                {activeAlert 
+                                {activeAlert
                                     ? (isTriggering ? "DEACTIVATING" : "ACTIVE")
                                     : (isTriggering ? "ACTIVATING" : "PULSE")
                                 }
                             </div>
                         </div>
 
-                        {/* Refined inner glass reflection */}
                         <div className="absolute inset-[3px] rounded-full border top-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none opacity-50 mix-blend-overlay"></div>
                     </button>
                 </div>
