@@ -58,7 +58,7 @@ export default function ProfilePage() {
             {/* User Info Section */}
             <div className="flex flex-col items-center mt-6 mb-8 px-6">
               <div className="relative mb-4">
-                <div className="h-24 w-24 rounded-full bg-gradient-to-tr from-primary to-blue-400 p-[3px] shadow-lg shadow-primary/30">
+                <div className="h-24 w-24 rounded-full bg-linear-to-tr from-primary to-blue-400 p-[3px] shadow-lg shadow-primary/30">
                   <img
                     alt="User Profile"
                     className="h-full w-full rounded-full object-cover border-[3px] border-white dark:border-background-dark"
@@ -92,7 +92,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Settings List */}
-            <div className="mx-4 mb-4 bg-white dark:bg-[#1a2230] rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800">
+            <div className="mx-4 mb-4 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800">
               <h3 className="text-sm font-bold text-text-sub dark:text-slate-400 mb-2 px-2 uppercase tracking-wider">Account</h3>
               <div className="flex flex-col">
                 <button onClick={() => setPersonalInfoOpen(true)} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-colors text-text-main dark:text-gray-100">
@@ -113,7 +113,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="mx-4 mb-4 bg-white dark:bg-[#1a2230] rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800">
+            <div className="mx-4 mb-4 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800">
               <h3 className="text-sm font-bold text-text-sub dark:text-slate-400 mb-2 px-2 uppercase tracking-wider">Preferences</h3>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between p-3 rounded-xl text-text-main dark:text-gray-100">

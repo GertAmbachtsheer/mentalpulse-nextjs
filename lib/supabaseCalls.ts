@@ -63,6 +63,39 @@ export async function upsertMood({
 }
 
 // ──────────────────────────────────────────────
+// Users
+// ──────────────────────────────────────────────
+
+export async function upsertUserProfile({
+  userId,
+  firstName,
+  lastName,
+  phoneNumber,
+}: {
+  userId: string
+  firstName: string
+  lastName: string
+  phoneNumber: string
+}) {
+  const { data, error } = await supabase
+    .from('users')
+    .upsert(
+      {
+        user_id: userId,
+        first_name: firstName,
+        last_name: lastName,
+        phone_number: phoneNumber,
+      },
+      { onConflict: 'user_id' }
+    )
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// ──────────────────────────────────────────────
 // Locations
 // ──────────────────────────────────────────────
 

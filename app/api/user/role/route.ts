@@ -9,7 +9,7 @@ export async function GET() {
 
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
-  const role = (user.privateMetadata?.role as string) ?? "user";
+  const role = (user.unsafeMetadata?.role as string) ?? "user";
 
   return NextResponse.json({ role });
 }

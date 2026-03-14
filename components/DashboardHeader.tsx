@@ -23,7 +23,7 @@ export default function DashboardHeader() {
           <p className="text-xs font-medium text-text-sub dark:text-slate-400">{getGreeting()},</p>
           <h1 className="text-lg font-bold text-text-main dark:text-white leading-tight">{firstName}</h1>
         </div>
-        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-blue-400 p-[2px]">
+        <div className="h-10 w-10 rounded-full bg-linear-to-tr from-primary to-blue-400 p-[2px]">
           <img
             alt="User Profile"
             className="h-full w-full rounded-full object-cover border-2 border-white dark:border-background-dark"

@@ -146,7 +146,7 @@ export function ResourcesMoodChart() {
 
   return (
     <section className="mx-4 mt-2 px-4 py-6">
-      <div className="bg-white dark:bg-[#1a2230] rounded-2xl p-5 shadow-sm border border-transparent dark:border-gray-800">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-transparent dark:border-gray-800">
         <div className="flex justify-between items-start mb-6">
           <div className="flex flex-col gap-1">
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Weekly Overview</p>

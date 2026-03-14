@@ -15,6 +15,7 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
   const [code, setCode] = React.useState("");
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [phoneNumber, setPhoneNumber] = React.useState("");
   const router = useRouter();
 
   // Handle submission of the sign-up form
@@ -26,12 +27,16 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
     setIsLoading(true);
 
     try {
-      // Start the sign-up process using the email, password, and name provided
+      // Start the sign-up process using the email, password, name, and phone provided
       await signUp.create({
         emailAddress,
         password,
         firstName,
         lastName,
+        unsafeMetadata: {
+          phoneNumber,
+          role: "user"
+        }
       });
 
       // Send the user an email with the verification code
@@ -72,6 +77,20 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
             if (session?.currentTask) {
               return;
             }
+            try {
+              await fetch("/api/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  firstName,
+                  lastName,
+                  phoneNumber,
+                }),
+              });
+            } catch (err) {
+              console.error("Failed to persist user profile to Supabase", err);
+              // Do not block navigation if this fails.
+            }
             router.push("/");
           },
         });
@@ -90,11 +109,11 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
   // Display email verification form
   if (verifying) {
     return (
-      <div className="bg-[#f6f6f8] dark:bg-[#101622] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans" style={{ fontFamily: 'Manrope, sans-serif' }}>
+      <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans" style={{ fontFamily: 'Manrope, sans-serif' }}>
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         
-        <div className="relative flex h-[100dvh] min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-[#101622] shadow-xl">
+        <div className="relative flex h-dvh min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-background-dark shadow-xl">
            <div className="flex items-center p-4 pb-2 justify-between">
               <div className="w-12"></div>
               <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Verification</h2>
@@ -140,12 +159,12 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
 
   // Display sign-up form
   return (
-    <div className="bg-[#f6f6f8] dark:bg-[#101622] text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans" style={{ fontFamily: 'Manrope, sans-serif' }}>
+    <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans" style={{ fontFamily: 'Manrope, sans-serif' }}>
       <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       
-      <div className="relative flex h-[100dvh] min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-[#101622] shadow-xl">
-        <div className="flex items-center p-4 pb-2 justify-between sticky top-0 bg-white/90 dark:bg-[#101622]/90 backdrop-blur-sm z-10">
+      <div className="relative flex h-dvh min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-white dark:bg-background-dark shadow-xl">
+        <div className="flex items-center p-4 pb-2 justify-between sticky top-0 bg-white/90 dark:bg-background-dark/90 backdrop-blur-sm z-10">
           <h2 className="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12 text-slate-900 dark:text-slate-100">Sign Up</h2>
         </div>
 
@@ -172,6 +191,23 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
                 <div className="relative">
                   <input required disabled={isLoading} value={lastName} onChange={(e) => setLastName(e.target.value)} className="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2b6cee] focus:ring-1 focus:ring-[#2b6cee] focus:outline-none h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal transition-all disabled:opacity-50" placeholder="Johnson" type="text" />
                 </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal">
+                Contact Number
+              </label>
+              <div className="relative">
+                <input
+                  required
+                  disabled={isLoading}
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="form-input flex w-full min-w-0 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-[#2b6cee] focus:ring-1 focus:ring-[#2b6cee] focus:outline-none h-14 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 text-base font-normal leading-normal transition-all disabled:opacity-50"
+                  placeholder="123 456 7890"
+                  type="tel"
+                />
               </div>
             </div>
 
@@ -213,7 +249,7 @@ export default function CustomSignUp({ onToggle }: { onToggle?: () => void }) {
           </form>
         </div>
 
-        <div className="p-8 text-center bg-slate-50 dark:bg-[#101622]/50 border-t border-slate-100 dark:border-slate-800">
+        <div className="p-8 text-center bg-slate-50 dark:bg-background-dark/50 border-t border-slate-100 dark:border-slate-800">
           <p className="text-base text-slate-600 dark:text-slate-400">
             Already have an account? 
             {onToggle ? (
