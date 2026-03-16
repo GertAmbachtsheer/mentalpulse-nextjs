@@ -63,7 +63,7 @@ export default function ProfilePage() {
                   <img
                     alt="User Profile"
                     className="h-full w-full rounded-full object-cover border-[3px] border-white dark:border-background-dark"
-                    src={user?.imageUrl || "https://placeholder.com/150"}
+                    src={user?.imageUrl || "/icon512_rounded.png"}
                   />
                 </div>
                 <input
