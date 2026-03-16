@@ -5,7 +5,8 @@
       "Bash(rtk git:*)",
       "Bash(node -e \"const wp = require\\(''web-push''\\); const keys = wp.generateVAPIDKeys\\(\\); console.log\\(''PUBLIC_KEY length:'', keys.publicKey.length\\); console.log\\(''NEXT_PUBLIC_VAPID_PUBLIC_KEY='' + keys.publicKey\\); console.log\\(''VAPID_PRIVATE_KEY='' + keys.privateKey\\);\")",
       "Bash(rtk next:*)",
-      "Bash(rtk tsc:*)"
+      "Bash(rtk tsc:*)",
+      "Bash(npx web-push:*)"
     ]
   }
 }
