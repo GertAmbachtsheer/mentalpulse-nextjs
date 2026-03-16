@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat, Manrope } from "next/font/google";
 import "./globals.css";
 import Providers from '@/components/Providers';
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 const APP_NAME = "Mental Pulse";
 const APP_DEFAULT_TITLE = "Mental Pulse";
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: "Mental Pulse",
   description: "Mental Pulse - Your Mental Health Companion",
-  // manifest: "/manifest.json",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -65,6 +66,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
       </head>
       <body className={`${montserrat.variable} ${manrope.variable} antialiased font-sans bg-background-light dark:bg-background-dark text-text-main dark:text-slate-100 flex flex-col min-h-screen`}>
+        <ServiceWorkerRegister />
         <Providers>{children}</Providers>
       </body>
     </html>

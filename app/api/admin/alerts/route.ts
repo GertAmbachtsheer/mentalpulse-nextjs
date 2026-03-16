@@ -40,15 +40,15 @@ export async function GET() {
     ].filter(Boolean)),
   ];
 
-  let nameMap: Record<string, { first_name: string | null; last_name: string | null }> = {};
+  let nameMap: Record<string, { first_name: string | null; last_name: string | null; phone_number: string | null }> = {};
   if (allUserIds.length > 0) {
     const { data: usersData } = await supabase
       .from("users")
-      .select("user_id, first_name, last_name")
+      .select("user_id, first_name, last_name, phone_number")
       .in("user_id", allUserIds);
 
     for (const u of usersData ?? []) {
-      nameMap[u.user_id] = { first_name: u.first_name ?? null, last_name: u.last_name ?? null };
+      nameMap[u.user_id] = { first_name: u.first_name ?? null, last_name: u.last_name ?? null, phone_number: u.phone_number ?? null };
     }
   }
 
@@ -56,6 +56,7 @@ export async function GET() {
     ...a,
     user_first_name: nameMap[a.user_id]?.first_name ?? null,
     user_last_name: nameMap[a.user_id]?.last_name ?? null,
+    user_contact_number: nameMap[a.user_id]?.phone_number ?? null,
     respondee_first_name: a.respondee ? (nameMap[a.respondee]?.first_name ?? null) : null,
     respondee_last_name: a.respondee ? (nameMap[a.respondee]?.last_name ?? null) : null,
   }));

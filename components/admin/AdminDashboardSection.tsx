@@ -8,6 +8,7 @@ type PanicAlert = {
   active: boolean;
   timestamp: number;
   created_at: string;
+  user_contact_number?: string | null;
   respondee?: string | null;
   respondee_first_name?: string | null;
   respondee_last_name?: string | null;
@@ -68,7 +69,7 @@ export function AdminDashboardSection({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">
                       User
@@ -77,6 +78,21 @@ export function AdminDashboardSection({
                       {activeAlert.user_first_name
                         ? [activeAlert.user_first_name, activeAlert.user_last_name].filter(Boolean).join(" ")
                         : <span className="font-mono text-[11px] text-slate-500">{activeAlert.user_id}</span>}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">
+                      Contact
+                    </p>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      {activeAlert.user_contact_number ? (
+                        <a href={`tel:${activeAlert.user_contact_number}`} className="font-medium hover:underline">
+                          {activeAlert.user_contact_number}
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 dark:text-slate-500">—</span>
+                      )}
                     </p>
                   </div>
 

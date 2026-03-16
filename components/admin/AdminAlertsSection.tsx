@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type PanicAlert = {
   id: string;
   user_id: string;
@@ -8,10 +10,13 @@ type PanicAlert = {
   active: boolean;
   timestamp: number;
   created_at: string;
+  user_contact_number?: string | null;
   respondee?: string | null;
   respondee_first_name?: string | null;
   respondee_last_name?: string | null;
 };
+
+const PAGE_SIZE = 20;
 
 interface AdminAlertsSectionProps {
   alerts: PanicAlert[];
@@ -26,6 +31,14 @@ export function AdminAlertsSection({
   alertsError,
   onOpenLocation,
 }: AdminAlertsSectionProps) {
+  const [page, setPage] = useState(0);
+
+  const sorted = [...alerts].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   return (
     <section className="max-w-5xl mx-auto">
       <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase mb-3">
@@ -52,18 +65,19 @@ export function AdminAlertsSection({
 
       {!alertsLoading && !alertsError && alerts.length > 0 && (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 overflow-hidden">
-          <div className="hidden md:grid grid-cols-5 gap-3 px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <div className="hidden md:grid grid-cols-6 gap-3 px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <span>User</span>
+            <span>Contact</span>
             <span>Status</span>
             <span>Responder</span>
             <span>Created</span>
             <span>Actions</span>
           </div>
           <div className="divide-y divide-slate-200 dark:divide-slate-800">
-            {alerts.map((a) => (
+            {paginated.map((a) => (
               <div
                 key={a.id}
-                className="px-4 py-3 flex flex-col gap-2 md:grid md:grid-cols-5 md:items-center md:gap-3 text-xs"
+                className="px-4 py-3 flex flex-col gap-2 md:grid md:grid-cols-6 md:items-center md:gap-3 text-xs"
               >
                 <div className="text-slate-800 dark:text-slate-100">
                   {a.user_first_name ? (
@@ -72,6 +86,18 @@ export function AdminAlertsSection({
                     </span>
                   ) : (
                     <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">{a.user_id}</span>
+                  )}
+                </div>
+                <div className="text-slate-700 dark:text-slate-300">
+                  {a.user_contact_number ? (
+                    <a
+                      href={`tel:${a.user_contact_number}`}
+                      className="text-[11px] font-medium hover:underline"
+                    >
+                      {a.user_contact_number}
+                    </a>
+                  ) : (
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">—</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -114,6 +140,51 @@ export function AdminAlertsSection({
               </div>
             ))}
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
+              <span>
+                Page {page + 1} of {totalPages} &middot; {sorted.length} total
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={page === 0}
+                  onClick={() => setPage(0)}
+                  className="px-2 py-1 rounded disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="First page"
+                >
+                  «
+                </button>
+                <button
+                  type="button"
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="px-2 py-1 rounded disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Previous page"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  disabled={page === totalPages - 1}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="px-2 py-1 rounded disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Next page"
+                >
+                  ›
+                </button>
+                <button
+                  type="button"
+                  disabled={page === totalPages - 1}
+                  onClick={() => setPage(totalPages - 1)}
+                  className="px-2 py-1 rounded disabled:opacity-30 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  aria-label="Last page"
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </section>

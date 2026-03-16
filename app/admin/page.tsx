@@ -1,23 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import AdminGuard from "@/components/AdminGuard";
 import { AdminUsersSection } from "@/components/admin/AdminUsersSection";
 import { AdminAlertsSection } from "@/components/admin/AdminAlertsSection";
 import { AdminMoodsSection } from "@/components/admin/AdminMoodsSection";
 import { AdminNotificationsSection } from "@/components/admin/AdminNotificationsSection";
 import { AdminDashboardSection } from "@/components/admin/AdminDashboardSection";
 import { AlertLocationModal } from "@/components/admin/AlertLocationModal";
-
-type AdminUser = {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  role: string;
-  createdAt: number;
-};
 
 type PanicAlert = {
   id: string;
@@ -29,18 +20,15 @@ type PanicAlert = {
   active: boolean;
   timestamp: number;
   created_at: string;
+  user_contact_number?: string | null;
   respondee?: string | null;
   respondee_first_name?: string | null;
   respondee_last_name?: string | null;
 };
 
 export default function AdminDashboardPage() {
-  const { isLoaded, isSignedIn, signOut } = useAuth();
   const router = useRouter();
 
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
   const [activeSection, setActiveSection] = useState<"dashboard" | "users" | "moods" | "alerts" | "notifications">("dashboard");
 
   const [alerts, setAlerts] = useState<PanicAlert[]>([]);
@@ -51,44 +39,7 @@ export default function AdminDashboardPage() {
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   useEffect(() => {
-    if (!isLoaded) return;
-
-    if (!isSignedIn) {
-      router.replace("/admin/login");
-      return;
-    }
-
-    const load = async () => {
-      try {
-        const res = await fetch("/api/admin/users");
-        if (res.status === 401) {
-          router.replace("/admin/login");
-          return;
-        }
-        if (res.status === 403) {
-          await signOut();
-          router.replace("/");
-          return;
-        }
-        if (!res.ok) {
-          setError("Failed to load users.");
-          setIsLoading(false);
-          return;
-        }
-        const data = await res.json();
-        setUsers(data.users ?? []);
-        setIsLoading(false);
-      } catch {
-        setError("Something went wrong while loading users.");
-        setIsLoading(false);
-      }
-    };
-
-    load();
-  }, [isLoaded, isSignedIn, router, signOut]);
-
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (activeSection !== "dashboard" && activeSection !== "alerts") return;
     if (alertsLoaded || alertsLoading) return;
 
     const loadAlerts = async () => {
@@ -96,13 +47,8 @@ export default function AdminDashboardPage() {
         setAlertsLoading(true);
         setAlertsError("");
         const res = await fetch("/api/admin/alerts");
-        if (res.status === 401) {
+        if (res.status === 401 || res.status === 403) {
           router.replace("/admin/login");
-          return;
-        }
-        if (res.status === 403) {
-          await signOut();
-          router.replace("/");
           return;
         }
         if (!res.ok) {
@@ -123,12 +69,10 @@ export default function AdminDashboardPage() {
     };
 
     loadAlerts();
-  }, [isLoaded, isSignedIn, alertsLoaded, alertsLoading, router, signOut]);
+  }, [activeSection, alertsLoaded, alertsLoading, router]);
 
   // SSE subscription for real-time alert updates
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
-
     const es = new EventSource("/api/admin/alerts/stream");
 
     es.addEventListener("alert:triggered", (e) => {
@@ -164,7 +108,7 @@ export default function AdminDashboardPage() {
     });
 
     return () => es.close();
-  }, [isLoaded, isSignedIn]);
+  }, []);
 
   const handleOpenLocation = (alert: PanicAlert) => {
     setSelectedAlert(alert);
@@ -177,6 +121,7 @@ export default function AdminDashboardPage() {
   };
 
   return (
+    <AdminGuard>
     <div
       className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen font-sans"
       style={{ fontFamily: "Manrope, sans-serif" }}
@@ -301,9 +246,7 @@ export default function AdminDashboardPage() {
               />
             )}
 
-            {activeSection === "users" && (
-              <AdminUsersSection users={users} isLoading={isLoading} error={error} />
-            )}
+            {activeSection === "users" && <AdminUsersSection />}
 
             {activeSection === "alerts" && (
               <AdminAlertsSection
@@ -325,6 +268,7 @@ export default function AdminDashboardPage() {
         <AlertLocationModal alert={selectedAlert} onClose={handleCloseLocation} />
       )}
     </div>
+    </AdminGuard>
   );
 }
 

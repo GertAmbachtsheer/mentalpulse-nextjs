@@ -1,18 +1,27 @@
 "use client";
 
 import { useUser, SignOutButton } from "@clerk/nextjs";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Loading from "@/app/loading";
 import { Toaster } from "@/components/ui/sonner";
 import BottomNav from "@/components/BottomNav";
 import PersonalInformationModal from "@/components/PersonalInformationModal";
 import Link from "next/link";
+import ProfileLocationToggleCard from "@/components/ProfileLocationToggleCard";
+import { Switch } from "@/components/ui/switch";
+import { useLocationStore } from "@/store/locationStore";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function ProfilePage() {
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
+  const { notificationsEnabled, setNotificationsEnabled, isLocationEnabled, setLocationEnabled, initForUser } = useLocationStore();
   const role = useUserStore((s) => s.role);
+  useEffect(() => {
+    if (user?.id) initForUser(user.id);
+  }, [user?.id]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [personalInfoOpen, setPersonalInfoOpen] = useState(false);
@@ -34,13 +43,9 @@ export default function ProfilePage() {
   }
 
 
-  if (!isLoaded) {
-    return <Loading />;
-  }
-
   return (
-    <Suspense fallback={<Loading />}>
-      {user ? (
+    <AuthGuard>
+      <Suspense fallback={<Loading />}>
         <div className="mx-auto w-full max-w-md bg-background-light dark:bg-background-dark flex flex-col relative shadow-2xl min-h-screen overflow-hidden">
           {/* Header */}
           <header className="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 pt-12 pb-4 flex items-center gap-4">
@@ -109,6 +114,28 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            <div className="mx-4 mb-4 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800">
+              <h3 className="text-sm font-bold text-text-sub dark:text-slate-400 mb-2 px-2 uppercase tracking-wider">Preferences</h3>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between p-3 rounded-xl text-text-main dark:text-gray-100">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-text-sub">notifications</span>
+                    <span className="font-medium text-[15px]">Push Notifications</span>
+                  </div>
+                  <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl text-text-main dark:text-gray-100">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-text-sub">location_on</span>
+                    <span className="font-medium text-[15px]">Location Services</span>
+                  </div>
+                  <Switch checked={isLocationEnabled} onCheckedChange={setLocationEnabled} />
+                </div>
+              </div>
+            </div>
+
+            <ProfileLocationToggleCard />
+
             <div className="mx-4 mt-6 mb-8 text-center pt-2">
               <SignOutButton>
                 <button className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl text-red-500 font-bold bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 shadow-sm border border-red-100 dark:border-red-500/20 transition-all">
@@ -123,11 +150,7 @@ export default function ProfilePage() {
           <Toaster />
           <PersonalInformationModal open={personalInfoOpen} onClose={() => setPersonalInfoOpen(false)} />
         </div>
-      ) : (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-          <p>Please log in to view your profile.</p>
-        </div>
-      )}
-    </Suspense>
+      </Suspense>
+    </AuthGuard>
   );
 }

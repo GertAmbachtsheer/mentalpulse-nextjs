@@ -1,23 +1,59 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+
 type AdminUser = {
   id: string;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  phoneNumber: string | null;
   role: string;
   createdAt: number;
 };
 
-interface AdminUsersSectionProps {
-  users: AdminUser[];
-  isLoading: boolean;
-  error: string;
-}
+export function AdminUsersSection() {
+  const { isLoaded, isSignedIn, signOut } = useAuth();
+  const router = useRouter();
 
-export function AdminUsersSection({
-  users,
-  isLoading,
-  error,
-}: AdminUsersSectionProps) {
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/admin/users");
+        if (res.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        if (res.status === 403) {
+          await signOut();
+          router.replace("/");
+          return;
+        }
+        if (!res.ok) {
+          setError("Failed to load users.");
+          setIsLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setUsers(data.users ?? []);
+        setIsLoading(false);
+      } catch {
+        setError("Something went wrong while loading users.");
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, [isLoaded, isSignedIn, router, signOut]);
+
   return (
     <>
       <section className="mb-6 max-w-5xl">
@@ -29,9 +65,11 @@ export function AdminUsersSection({
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
               Total Users
             </p>
-            <p className="text-2xl font-bold mt-1">
-              {isLoading ? "—" : users.length}
-            </p>
+            {isLoading ? (
+              <div className="h-7 w-10 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse mt-1" />
+            ) : (
+              <p className="text-2xl font-bold mt-1">{users.length}</p>
+            )}
           </div>
           <span className="material-symbols-outlined text-[32px] text-[#2b6cee]">
             group
@@ -45,8 +83,19 @@ export function AdminUsersSection({
         </h3>
 
         {isLoading && (
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4 text-sm text-slate-500 dark:text-slate-400">
-            Loading users…
+          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 divide-y divide-slate-200 dark:divide-slate-800 overflow-hidden">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-3">
+                <div className="flex flex-col gap-2">
+                  <div className="h-3.5 w-32 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+                  <div className="h-2.5 w-44 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="h-5 w-14 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+                  <div className="h-2.5 w-16 rounded-full bg-slate-100 dark:bg-slate-800 animate-pulse" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -78,6 +127,14 @@ export function AdminUsersSection({
                   <span className="text-xs text-slate-500 dark:text-slate-400">
                     {u.email || "No email"}
                   </span>
+                  {u.phoneNumber && (
+                    <a
+                      href={`tel:${u.phoneNumber}`}
+                      className="text-xs text-slate-500 dark:text-slate-400 hover:underline"
+                    >
+                      {u.phoneNumber}
+                    </a>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span
@@ -101,4 +158,3 @@ export function AdminUsersSection({
     </>
   );
 }
-

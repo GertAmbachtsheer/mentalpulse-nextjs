@@ -60,6 +60,7 @@ export async function GET() {
           firstName: (row.first_name as string | null) ?? user.firstName ?? null,
           lastName: (row.last_name as string | null) ?? user.lastName ?? null,
           email: primaryEmail,
+          phoneNumber: (row.phone_number as string | null) ?? null,
           role: userRole,
           createdAt: supabaseCreatedAt,
         };
@@ -75,6 +76,7 @@ export async function GET() {
           firstName: (row.first_name as string | null) ?? null,
           lastName: (row.last_name as string | null) ?? null,
           email: null,
+          phoneNumber: (row.phone_number as string | null) ?? null,
           role: "user",
           createdAt: supabaseCreatedAt,
         };

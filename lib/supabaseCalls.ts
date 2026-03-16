@@ -95,6 +95,17 @@ export async function upsertUserProfile({
   return data
 }
 
+export async function getUserProfile(userId: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('first_name, last_name, phone_number')
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
 // ──────────────────────────────────────────────
 // Locations
 // ──────────────────────────────────────────────
@@ -404,6 +415,66 @@ export async function respondToPanicAlert(alertId: string, responderUserId: stri
 
   if (error) throw error
   return data
+}
+
+// ──────────────────────────────────────────────
+// Push Subscriptions
+// ──────────────────────────────────────────────
+
+export interface PushSubscriptionRow {
+  id: string
+  user_id: string
+  subscription: {
+    endpoint: string
+    keys: {
+      p256dh: string
+      auth: string
+    }
+  }
+  status: 'active' | 'inactive'
+  created_at: string
+}
+
+export async function getAllPushSubscriptions(): Promise<PushSubscriptionRow[]> {
+  const { data, error } = await supabase
+    .from('push_subscriptions')
+    .select('id, user_id, subscription, status, created_at')
+    .eq('status', 'active')
+
+  if (error) throw error
+  return data || []
+}
+
+export async function upsertPushSubscription(
+  userId: string,
+  subscription: PushSubscriptionRow['subscription']
+): Promise<void> {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .upsert(
+      { user_id: userId, subscription, status: 'active' },
+      { onConflict: 'user_id,subscription' }
+    )
+
+  if (error) throw error
+}
+
+export async function deactivatePushSubscription(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .update({ status: 'inactive' })
+    .eq('user_id', userId)
+
+  if (error) throw error
+}
+
+export async function deletePushSubscriptionById(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
 }
 
 export async function getActiveRespondedAlert(userId: string) {

@@ -7,6 +7,8 @@ import {
   getEmergencyContacts,
   addEmergencyContact,
   deleteEmergencyContact,
+  getUserProfile,
+  upsertUserProfile,
   EmergencyContact,
 } from "@/lib/supabaseCalls";
 
@@ -20,9 +22,10 @@ type Tab = "name" | "password" | "contacts";
 export default function PersonalInformationModal({ open, onClose }: Props) {
   const { user } = useUser();
 
-  // Name
+  // Personal tab
   const [firstName, setFirstName] = useState(user?.firstName ?? "");
   const [lastName, setLastName] = useState(user?.lastName ?? "");
+  const [contactNumber, setContactNumber] = useState("");
   const [savingName, setSavingName] = useState(false);
 
   // Password
@@ -45,13 +48,15 @@ export default function PersonalInformationModal({ open, onClose }: Props) {
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Sync name fields when user loads
+  // Sync fields when user loads
   useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName ?? "");
-      setLastName(user.lastName ?? "");
-    }
-  }, [user]);
+    if (!user) return;
+    setFirstName(user.firstName ?? "");
+    setLastName(user.lastName ?? "");
+    getUserProfile(user.id)
+      .then((profile) => { if (profile) setContactNumber(profile.phone_number ?? ""); })
+      .catch(() => {});
+  }, [user?.id]);
 
   // Load emergency contacts when tab is opened
   useEffect(() => {
@@ -78,10 +83,13 @@ export default function PersonalInformationModal({ open, onClose }: Props) {
     if (!user) return;
     setSavingName(true);
     try {
-      await user.update({ firstName, lastName });
-      toast.success("Name updated successfully");
+      await Promise.all([
+        user.update({ firstName, lastName }),
+        upsertUserProfile({ userId: user.id, firstName, lastName, phoneNumber: contactNumber }),
+      ]);
+      toast.success("Personal information updated");
     } catch {
-      toast.error("Failed to update name");
+      toast.error("Failed to update personal information");
     } finally {
       setSavingName(false);
     }
@@ -174,7 +182,7 @@ export default function PersonalInformationModal({ open, onClose }: Props) {
         <div className="flex px-4 pt-4 gap-2">
           {(["name", "password", "contacts"] as Tab[]).map((tab) => {
             const labels: Record<Tab, string> = {
-              name: "Name",
+              name: "Personal",
               password: "Password",
               contacts: "Emergency",
             };
@@ -199,7 +207,7 @@ export default function PersonalInformationModal({ open, onClose }: Props) {
           {/* ── Name Tab ── */}
           {activeTab === "name" && (
             <div className="flex flex-col gap-4">
-              <p className="text-sm text-text-sub dark:text-slate-400">Update your display name.</p>
+              <p className="text-sm text-text-sub dark:text-slate-400">Update your personal information.</p>
 
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-text-sub dark:text-slate-400 uppercase tracking-wider">
@@ -225,12 +233,25 @@ export default function PersonalInformationModal({ open, onClose }: Props) {
                 />
               </div>
 
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-text-sub dark:text-slate-400 uppercase tracking-wider">
+                  Contact Number
+                </label>
+                <input
+                  value={contactNumber}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  type="tel"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-text-main dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder="+1 555 000 0000"
+                />
+              </div>
+
               <button
                 onClick={handleSaveName}
                 disabled={savingName}
                 className="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition-colors disabled:opacity-60 mt-2"
               >
-                {savingName ? "Saving..." : "Save Name"}
+                {savingName ? "Saving..." : "Save"}
               </button>
             </div>
           )}
