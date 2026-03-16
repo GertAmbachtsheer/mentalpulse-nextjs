@@ -47,11 +47,12 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return false;
 
-  const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
   if (!vapidKey) {
     console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set');
     return false;
   }
+  console.log('[Push] VAPID key length:', vapidKey.length, '(expected 87-88)');
 
   const existing = await navigator.serviceWorker.getRegistration();
   if (!existing) {
