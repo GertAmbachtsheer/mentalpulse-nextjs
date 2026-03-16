@@ -122,7 +122,11 @@ export const useLocationStore = create<LocationState>()((set, get) => ({
           saveToStorage(userId, { isLocationEnabled, notificationsEnabled: false });
         }
       } catch (err) {
+        const isAbort = err instanceof DOMException && err.name === 'AbortError';
         console.error('[Push] Failed to register subscription:', err);
+        if (isAbort) {
+          console.warn('[Push] Push service error — clear site data in browser settings and retry.');
+        }
         set({ notificationsEnabled: false });
         saveToStorage(userId, { isLocationEnabled, notificationsEnabled: false });
       }
