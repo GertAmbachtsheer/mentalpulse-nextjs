@@ -67,7 +67,7 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as ArrayBuffer,
+    applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer.slice(0) as ArrayBuffer,
   });
 
   const res = await fetch('/api/push/subscribe', {
