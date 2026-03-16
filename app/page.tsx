@@ -32,10 +32,10 @@ export default function Home() {
               <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
               <div className="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-blue-400/20 blur-2xl"></div>
               <span className="mb-3 block text-white/80 text-xs font-semibold tracking-wider uppercase">Daily Inspiration</span>
-              <p className="mb-4 text-xl font-medium leading-relaxed text-white">"Happiness can be found even in the darkest of times, if one only remembers to turn on the light."</p>
+              <p className="mb-4 text-xl font-medium leading-relaxed text-white">"Fear not, for I am with you; be not dismayed, for I am your God; <br/>I will strengthen you, I will help you, I will uphold you with my righteous right hand."</p>
               <div className="flex items-center gap-2">
                 <span className="h-px w-8 bg-white/40"></span>
-                <span className="text-sm font-light text-white/90">Albus Dumbledore</span>
+                <span className="text-sm font-light text-white/90">Isaiah 41:10</span>
               </div>
             </div>
 
