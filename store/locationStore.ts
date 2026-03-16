@@ -52,7 +52,6 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set');
     return false;
   }
-  console.log('[Push] VAPID key length:', vapidKey.length, '(expected 87-88)');
 
   const existing = await navigator.serviceWorker.getRegistration();
   if (!existing) {
