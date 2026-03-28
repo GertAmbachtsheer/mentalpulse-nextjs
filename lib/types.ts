@@ -41,3 +41,11 @@ export interface MoodRow {
   mood: string;
   created_at: string;
 }
+
+export interface MoodJournalRow {
+  id: string;
+  user_id: string;
+  mood_id: string;
+  content: string;
+  created_at: string;
+}

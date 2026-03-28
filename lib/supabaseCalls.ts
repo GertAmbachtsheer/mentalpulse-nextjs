@@ -63,6 +63,66 @@ export async function upsertMood({
 }
 
 // ──────────────────────────────────────────────
+// Mood Journals
+// ──────────────────────────────────────────────
+
+export async function getRecentJournals(userId: string) {
+  const { data, error } = await supabase
+    .from('mood_journals')
+    .select('*, moods(mood)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(7)
+
+  if (error) throw error
+  return data
+}
+
+export async function getJournalByMoodId(moodId: string) {
+  const { data, error } = await supabase
+    .from('mood_journals')
+    .select('*')
+    .eq('mood_id', moodId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export async function upsertMoodJournal({
+  id,
+  userId,
+  moodId,
+  content,
+}: {
+  id?: string
+  userId: string
+  moodId: string
+  content: string
+}) {
+  if (id) {
+    const { data, error } = await supabase
+      .from('mood_journals')
+      .update({ content })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } else {
+    const { data, error } = await supabase
+      .from('mood_journals')
+      .insert({ user_id: userId, mood_id: moodId, content })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  }
+}
+
+// ──────────────────────────────────────────────
 // Users
 // ──────────────────────────────────────────────
 

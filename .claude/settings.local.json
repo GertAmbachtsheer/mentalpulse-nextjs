@@ -6,7 +6,12 @@
       "Bash(node -e \"const wp = require\\(''web-push''\\); const keys = wp.generateVAPIDKeys\\(\\); console.log\\(''PUBLIC_KEY length:'', keys.publicKey.length\\); console.log\\(''NEXT_PUBLIC_VAPID_PUBLIC_KEY='' + keys.publicKey\\); console.log\\(''VAPID_PRIVATE_KEY='' + keys.privateKey\\);\")",
       "Bash(rtk next:*)",
       "Bash(rtk tsc:*)",
-      "Bash(npx web-push:*)"
+      "Bash(npx web-push:*)",
+      "Bash(xargs basename:*)",
+      "Bash(grep -r \"mood\\\\|journal\" /c/Projects/Nextjs-mental/mentalpulse/lib --include=*.ts)",
+      "Bash(grep -r \"webpush\\\\|web-push\\\\|sendNotification\" C:ProjectsNextjs-mentalmentalpulse --include=*.ts --include=*.tsx)",
+      "Bash(grep -r \"respond.*alert\\\\|alertId\\\\|respond\" C:ProjectsNextjs-mentalmentalpulse --include=*.ts --include=*.tsx)",
+      "Bash(grep -r respond C:ProjectsNextjs-mentalmentalpulse/app --include=*.ts --include=*.tsx)"
     ]
   }
 }

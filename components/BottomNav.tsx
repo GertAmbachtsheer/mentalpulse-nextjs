@@ -16,7 +16,7 @@ export default function BottomNav() {
           </Link>
         </li>
         <li>
-          <Link className={`flex flex-col items-center gap-1 group transition-colors ${pathname === '/journal' ? 'text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-primary'}`} href="#">
+          <Link className={`flex flex-col items-center gap-1 group transition-colors ${pathname === '/journal' ? 'text-primary' : 'text-slate-400 dark:text-slate-500 hover:text-primary'}`} href="/journal">
             <span className="material-symbols-outlined text-[26px] group-hover:scale-110 transition-transform">menu_book</span>
             <span className="text-[10px] font-medium">Journal</span>
           </Link>

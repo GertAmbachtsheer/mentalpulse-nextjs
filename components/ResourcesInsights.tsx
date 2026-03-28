@@ -33,7 +33,7 @@ export function ResourcesInsights() {
     if (!userMoods || userMoods.length === 0) {
       return {
         bestDay: "N/A",
-        avgMood: "0.0",
+        bestDayMood: "",
         streak: "0 Days",
         totalLogs: "0",
       };
@@ -56,30 +56,28 @@ export function ResourcesInsights() {
       return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     });
 
-    // Best Day of the Week calculation
-    const dayStats: Record<number, { sum: number; count: number }> = {};
-    userMoods.forEach((m) => {
-      const d = new Date(m.created_at);
-      const day = d.getDay();
-      const val = moodValues[m.mood] || 3;
-      if (!dayStats[day]) dayStats[day] = { sum: 0, count: 0 };
-      dayStats[day].sum += val;
-      dayStats[day].count += 1;
-    });
+    // Most recent best day: find the highest mood value, then the most recent entry with that value
+    const highestVal = Math.max(...userMoods.map((m) => moodValues[m.mood] || 3));
+    const bestEntries = userMoods.filter((m) => (moodValues[m.mood] || 3) === highestVal);
+    const mostRecentBest = bestEntries.reduce((latest, m) =>
+      new Date(m.created_at) > new Date(latest.created_at) ? m : latest
+    );
 
-    let bestDayIdx = -1;
-    let highestAvg = -1;
-    Object.entries(dayStats).forEach(([dayStr, stats]) => {
-      const avg = stats.sum / stats.count;
-      if (avg > highestAvg) {
-        highestAvg = avg;
-        bestDayIdx = parseInt(dayStr);
-      }
-    });
+    const bestDate = new Date(mostRecentBest.created_at);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
 
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const bestDayName = bestDayIdx !== -1 ? daysOfWeek[bestDayIdx] : "N/A";
-    const bestDayAvg = highestAvg !== -1 ? highestAvg.toFixed(1) : "0.0";
+    let bestDayName: string;
+    if (bestDate.toDateString() === today.toDateString()) {
+      bestDayName = "Today";
+    } else if (bestDate.toDateString() === yesterday.toDateString()) {
+      bestDayName = "Yesterday";
+    } else {
+      bestDayName = bestDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    }
+
+    const bestDayMood = mostRecentBest.mood;
 
     // Basic Streak Calculation (consecutive days of logging from today downwards)
     let streak = 0;
@@ -123,7 +121,7 @@ export function ResourcesInsights() {
 
     return {
       bestDay: bestDayName,
-      avgMood: bestDayAvg,
+      bestDayMood,
       streak: `${streak} Days`,
       totalLogs: thisMonthLogs.length.toString(),
     };
@@ -157,7 +155,7 @@ export function ResourcesInsights() {
             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Best Day</span>
           </div>
           <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{insights.bestDay}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Avg. Mood: {insights.avgMood}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{insights.bestDayMood ? `Felt ${insights.bestDayMood}` : "No data yet"}</p>
         </div>
 
         {/* Streak Card */}
