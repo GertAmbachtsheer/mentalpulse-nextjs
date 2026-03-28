@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, FormEvent } from "react";
-import { useSignIn } from "@clerk/nextjs";
+import { useSignIn, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { isSignedIn } = useUser();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -14,10 +15,11 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // If Clerk is not yet loaded, avoid rendering the form
   useEffect(() => {
-    if (!isLoaded) return;
-  }, [isLoaded]);
+    if (isSignedIn) {
+      router.replace("/admin");
+    }
+  }, [isSignedIn, router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

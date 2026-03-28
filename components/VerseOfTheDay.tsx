@@ -19,11 +19,23 @@ export default function VerseOfTheDay() {
       .catch(() => {});
   }, []);
 
+  const handleOpen = () => {
+    if (!votd) return;
+    // Extract passage ID from URL for deep link (e.g. "JHN.3.16.WEB")
+    const passageId = votd.url.split("/").pop() ?? "";
+    const deepLink = `bible://verse?id=${passageId}`;
+    window.location.href = deepLink;
+    // Fall back to web if app not installed
+    setTimeout(() => {
+      window.open(votd.url, "_blank", "noopener,noreferrer");
+    }, 1500);
+  };
+
   const Wrapper = votd
     ? ({ children }: { children: React.ReactNode }) => (
-        <a href={votd.url} target="_blank" rel="noopener noreferrer" className="block">
+        <div onClick={handleOpen} className="block cursor-pointer">
           {children}
-        </a>
+        </div>
       )
     : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
