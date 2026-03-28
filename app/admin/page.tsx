@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
                   {activeSection === "dashboard" && "Overview of current activity."}
                   {activeSection === "users" && "View and manage registered users."}
-                  {activeSection === "moods" && "Coming soon: review mood data and trends."}
+                  {activeSection === "moods" && "View mood data and trends."}
                   {activeSection === "alerts" && "Review all panic alerts raised in the app."}
                   {activeSection === "notifications" && "Coming soon: manage push and in-app notifications."}
                 </p>

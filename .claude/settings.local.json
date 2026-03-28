@@ -11,7 +11,8 @@
       "Bash(grep -r \"mood\\\\|journal\" /c/Projects/Nextjs-mental/mentalpulse/lib --include=*.ts)",
       "Bash(grep -r \"webpush\\\\|web-push\\\\|sendNotification\" C:ProjectsNextjs-mentalmentalpulse --include=*.ts --include=*.tsx)",
       "Bash(grep -r \"respond.*alert\\\\|alertId\\\\|respond\" C:ProjectsNextjs-mentalmentalpulse --include=*.ts --include=*.tsx)",
-      "Bash(grep -r respond C:ProjectsNextjs-mentalmentalpulse/app --include=*.ts --include=*.tsx)"
+      "Bash(grep -r respond C:ProjectsNextjs-mentalmentalpulse/app --include=*.ts --include=*.tsx)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|sql\\)$\")"
     ]
   }
 }

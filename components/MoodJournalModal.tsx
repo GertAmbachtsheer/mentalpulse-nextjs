@@ -73,7 +73,7 @@ export default function MoodJournalModal({
   const borderClass = moodBorders[mood] ?? "border-slate-200";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center px-4 pb-4 sm:pb-0">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -81,7 +81,7 @@ export default function MoodJournalModal({
       />
 
       {/* Modal */}
-      <div className={`relative w-full max-w-md bg-white dark:bg-surface-dark rounded-3xl shadow-xl border ${borderClass} p-6 z-10`}>
+      <div className={`relative w-full max-w-md bg-white dark:bg-surface-dark rounded-3xl shadow-xl border ${borderClass} p-6 z-[201]`}>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
