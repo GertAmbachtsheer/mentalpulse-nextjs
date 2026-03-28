@@ -99,7 +99,7 @@ export default function PanicButton() {
                 setIsTriggering(false);
                 setTimeout(() => setIsPressed(false), 300);
             },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
         );
     };
 

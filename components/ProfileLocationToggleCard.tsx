@@ -12,7 +12,6 @@ export default function ProfileLocationToggleCard() {
   const { isLocationEnabled, setLocationEnabled } = useLocationStore();
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [locationPermission, setLocationPermission] = useState<string>('');
   const mapRef = useRef<MapRef>(null);
   const [userLocationData, setUserLocationData] = useState<any>(null);
 
@@ -57,30 +56,17 @@ export default function ProfileLocationToggleCard() {
     }
   }, [location]);
 
-  useEffect(() => {
-    if (!navigator.permissions?.query) {
-      setLocationPermission(navigator.geolocation ? 'available' : 'unavailable');
-      return;
-    }
-    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-      setLocationPermission(result.state);
-      result.addEventListener('change', () => setLocationPermission(result.state));
-    });
-  }, []);
-
   // Auto-fetch location whenever location services are enabled
   useEffect(() => {
     if (!isLocationEnabled) return;
-    if (locationPermission === 'denied') {
-      toast.error("Location access denied", {
-        description: "Please allow location access in your browser settings.",
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser", {
         position: "top-center",
         duration: 3000,
       });
       setLocationEnabled(false);
       return;
     }
-    if (locationPermission === '' || locationPermission === 'unavailable') return;
 
     setLoading(true);
     navigator.geolocation.getCurrentPosition(
@@ -93,12 +79,25 @@ export default function ProfileLocationToggleCard() {
         setLoading(false);
       },
       (err) => {
-        toast.error(err.message, { position: "top-center", duration: 2000 });
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Location access denied", {
+            description: "Please allow location access in your device settings and try again.",
+            position: "top-center",
+            duration: 4000,
+          });
+          setLocationEnabled(false);
+        } else {
+          toast.error("Unable to get your location", {
+            description: "Please check your location settings and try again.",
+            position: "top-center",
+            duration: 3000,
+          });
+        }
         setLoading(false);
       },
-      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
-  }, [isLocationEnabled, locationPermission]);
+  }, [isLocationEnabled]);
 
   if (!isLocationEnabled || !location) return null;
 
