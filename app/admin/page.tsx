@@ -9,6 +9,7 @@ import { AdminMoodsSection } from "@/components/admin/AdminMoodsSection";
 import { AdminNotificationsSection } from "@/components/admin/AdminNotificationsSection";
 import { AdminDashboardSection } from "@/components/admin/AdminDashboardSection";
 import { AlertLocationModal } from "@/components/admin/AlertLocationModal";
+import { AdminSupportSection } from "@/components/admin/AdminSupportSection";
 
 type PanicAlert = {
   id: string;
@@ -29,7 +30,7 @@ type PanicAlert = {
 export default function AdminDashboardPage() {
   const router = useRouter();
 
-  const [activeSection, setActiveSection] = useState<"dashboard" | "users" | "moods" | "alerts" | "notifications">("dashboard");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "users" | "moods" | "alerts" | "notifications" | "support">("dashboard");
 
   const [alerts, setAlerts] = useState<PanicAlert[]>([]);
   const [alertsLoading, setAlertsLoading] = useState(false);
@@ -202,6 +203,17 @@ export default function AdminDashboardPage() {
               <span className="material-symbols-outlined text-[18px]">notifications</span>
               <span>Notifications</span>
             </button>
+            <button
+              onClick={() => setActiveSection("support")}
+              className={`w-full flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-left transition-colors ${
+                activeSection === "support"
+                  ? "bg-[#2b6cee]/10 text-[#1c50b4] dark:text-[#86a9ff]"
+                  : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">support_agent</span>
+              <span>Support Options</span>
+            </button>
           </nav>
         </aside>
 
@@ -224,6 +236,7 @@ export default function AdminDashboardPage() {
                   {activeSection === "moods" && "Moods"}
                   {activeSection === "alerts" && "Alerts"}
                   {activeSection === "notifications" && "Notifications"}
+                  {activeSection === "support" && "Support Options"}
                 </h1>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
                   {activeSection === "dashboard" && "Overview of current activity."}
@@ -231,6 +244,7 @@ export default function AdminDashboardPage() {
                   {activeSection === "moods" && "View mood data and trends."}
                   {activeSection === "alerts" && "Review all panic alerts raised in the app."}
                   {activeSection === "notifications" && "Coming soon: manage push and in-app notifications."}
+                  {activeSection === "support" && "Manage helplines, crisis resources, and support options."}
                 </p>
               </div>
             </div>
@@ -260,6 +274,8 @@ export default function AdminDashboardPage() {
             {activeSection === "moods" && <AdminMoodsSection />}
 
             {activeSection === "notifications" && <AdminNotificationsSection />}
+
+            {activeSection === "support" && <AdminSupportSection />}
           </main>
         </div>
       </div>

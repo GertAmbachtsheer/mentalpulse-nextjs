@@ -12,7 +12,11 @@
       "Bash(grep -r \"webpush\\\\|web-push\\\\|sendNotification\" C:ProjectsNextjs-mentalmentalpulse --include=*.ts --include=*.tsx)",
       "Bash(grep -r \"respond.*alert\\\\|alertId\\\\|respond\" C:ProjectsNextjs-mentalmentalpulse --include=*.ts --include=*.tsx)",
       "Bash(grep -r respond C:ProjectsNextjs-mentalmentalpulse/app --include=*.ts --include=*.tsx)",
-      "Bash(grep -E \"\\\\.\\(ts|tsx|sql\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|tsx|sql\\)$\")",
+      "Bash(find /c/Projects/Nextjs-mental/mentalpulse/components -type f -name *.tsx -o -name *.ts)",
+      "Bash(find C:/Projects/Nextjs-mental/mentalpulse -type f -name *.sql -o -name *migration* -o -name *schema*)",
+      "Bash(find C:/Projects/Nextjs-mental/mentalpulse -path */node_modules -prune -o -name *supabase* -type f -print)",
+      "Bash(find C:/Projects/Nextjs-mental/mentalpulse -type f \\\\\\(-name README* -o -name SCHEMA* -o -name DATABASE* -o -name *.md \\\\\\) ! -path */node_modules/* ! -path */.next/*)"
     ]
   }
 }
