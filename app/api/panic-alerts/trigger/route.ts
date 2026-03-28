@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
       const { data: userRow } = await supabase
         .from('users')
-        .select('first_name')
+        .select('first_name, phone_number')
         .eq('user_id', userId)
         .maybeSingle();
       const firstName = userRow?.first_name ?? 'Someone';
@@ -66,7 +66,11 @@ export async function POST(req: NextRequest) {
         body: `${firstName} needs help nearby. Tap to respond.`,
         icon: '/icon512_rounded.png',
         badge: '/icon512_rounded.png',
-        data: { type: 'panic-alert', alertId },
+        data: {
+          type: 'panic-alert',
+          alertId,
+          phoneNumber: userRow?.phone_number ?? null,
+        },
       });
 
       let sent = 0, failed = 0;

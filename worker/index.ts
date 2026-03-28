@@ -23,6 +23,7 @@ sw.addEventListener('push', (event: PushEvent) => {
   if (data.data?.type === 'panic-alert') {
     options.actions = [
       { action: 'respond', title: '💚 Respond' },
+      ...(data.data?.phoneNumber ? [{ action: 'call', title: '📞 Call Now' }] : []),
       { action: 'decline', title: 'Dismiss' },
     ];
   } else if (data.data?.type === 'panic-response') {
@@ -140,6 +141,11 @@ sw.addEventListener('notificationclick', (event: NotificationEvent) => {
           console.error('[SW] Error handling alert-cancelled action:', error);
         }
       })()
+    );
+  } else if (action === 'call' && data?.phoneNumber) {
+    // User clicked "Call Now" — open the tel: URI to dial the alert sender
+    event.waitUntil(
+      sw.clients.openWindow(`tel:${data.phoneNumber}`)
     );
   } else if (action === 'decline' || action === 'close') {
     // Just close the notification (already done above)
