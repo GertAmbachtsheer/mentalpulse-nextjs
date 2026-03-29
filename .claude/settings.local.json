@@ -16,7 +16,17 @@
       "Bash(find /c/Projects/Nextjs-mental/mentalpulse/components -type f -name *.tsx -o -name *.ts)",
       "Bash(find C:/Projects/Nextjs-mental/mentalpulse -type f -name *.sql -o -name *migration* -o -name *schema*)",
       "Bash(find C:/Projects/Nextjs-mental/mentalpulse -path */node_modules -prune -o -name *supabase* -type f -print)",
-      "Bash(find C:/Projects/Nextjs-mental/mentalpulse -type f \\\\\\(-name README* -o -name SCHEMA* -o -name DATABASE* -o -name *.md \\\\\\) ! -path */node_modules/* ! -path */.next/*)"
+      "Bash(find C:/Projects/Nextjs-mental/mentalpulse -type f \\\\\\(-name README* -o -name SCHEMA* -o -name DATABASE* -o -name *.md \\\\\\) ! -path */node_modules/* ! -path */.next/*)",
+      "Bash(rtk pnpm:*)",
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(find C:ProjectsNextjs-mentalmentalpulse -path */node_modules -prune -o -type f \\\\\\(-name *bottom* -o -name *nav* -o -name *tab* \\\\\\) -print)",
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(grep -r \"BottomNav\\\\|hide.*scroll\\\\|scroll.*hide\" C:ProjectsNextjs-mentalmentalpulsecomponents --include=*.tsx --include=*.ts)",
+      "Bash(find C:ProjectsNextjs-mentalmentalpulse -path */node_modules -prune -o -type f -name *.tsx -o -name *.ts -print)",
+      "Bash(grep -r \"hide.*scroll\\\\|scroll.*hide\\\\|translate\\\\|transform\" C:ProjectsNextjs-mentalmentalpulseapp --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"BottomNav\\\\|bottom.*scroll\\\\|scroll.*bottom\" C:ProjectsNextjs-mentalmentalpulseapp --include=*.tsx)",
+      "Bash(find C:ProjectsNextjs-mentalmentalpulse -type f -name *.test.* -o -name *.spec.*)"
     ]
   }
 }

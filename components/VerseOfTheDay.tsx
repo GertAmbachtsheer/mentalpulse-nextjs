@@ -7,6 +7,10 @@ type VOTD = {
   url: string;
 };
 
+function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+}
+
 export default function VerseOfTheDay() {
   const [votd, setVotd] = useState<VOTD | null>(null);
 
@@ -19,29 +23,28 @@ export default function VerseOfTheDay() {
       .catch(() => {});
   }, []);
 
-  const handleOpen = () => {
-    if (!votd) return;
-    // Extract passage ID from URL for deep link (e.g. "JHN.3.16.WEB")
+  const getBibleLink = (): string => {
+    if (!votd) return "#";
+    if (isIOS()) {
+      // iOS: use universal link — opens YouVersion app if installed, Safari otherwise
+      return votd.url;
+    }
+    // Android: use deep link scheme
     const passageId = votd.url.split("/").pop() ?? "";
-    const deepLink = `bible://verse?id=${passageId}`;
-    window.location.href = deepLink;
-    // Fall back to web if app not installed
-    setTimeout(() => {
-      window.open(votd.url, "_blank", "noopener,noreferrer");
-    }, 1500);
+    return `bible://verse?id=${passageId}`;
   };
 
   const Wrapper = votd
     ? ({ children }: { children: React.ReactNode }) => (
-        <div onClick={handleOpen} className="block cursor-pointer">
+        <a href={getBibleLink()} target="_blank" rel="noopener noreferrer" className="block">
           {children}
-        </div>
+        </a>
       )
     : ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
   return (
     <Wrapper>
-    <div className="relative mb-8 overflow-hidden rounded-3xl bg-primary p-6 shadow-lg shadow-primary/20 active:opacity-80 transition-opacity">
+    <div className="relative mb-8 overflow-hidden rounded-3xl bg-primary p-6 shadow-lg shadow-primary/20 active:opacity-80 transition-opacity cursor-pointer">
       <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"></div>
       <div className="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-blue-400/20 blur-2xl"></div>
       <span className="mb-3 block text-white/80 text-xs font-semibold tracking-wider uppercase">
