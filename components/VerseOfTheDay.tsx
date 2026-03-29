@@ -7,10 +7,6 @@ type VOTD = {
   url: string;
 };
 
-function isIOS(): boolean {
-  return /iPad|iPhone|iPod/.test(navigator.userAgent);
-}
-
 export default function VerseOfTheDay() {
   const [votd, setVotd] = useState<VOTD | null>(null);
 
@@ -25,13 +21,9 @@ export default function VerseOfTheDay() {
 
   const getBibleLink = (): string => {
     if (!votd) return "#";
-    if (isIOS()) {
-      // iOS: use universal link — opens YouVersion app if installed, Safari otherwise
-      return votd.url;
-    }
-    // Android: use deep link scheme
-    const passageId = votd.url.split("/").pop() ?? "";
-    return `bible://verse?id=${passageId}`;
+    // Use the HTTPS universal link — opens YouVersion app on both iOS and Android
+    // if installed, otherwise falls back to the YouVersion website
+    return votd.url;
   };
 
   const Wrapper = votd
