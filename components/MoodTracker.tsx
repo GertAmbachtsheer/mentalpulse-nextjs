@@ -20,6 +20,8 @@ export default function MoodTracker() {
   const [sameDay, setSameDay] = useState<boolean>(false);
   const [userMood, setUserMood] = useState<any>(null);
   const [journalModalOpen, setJournalModalOpen] = useState(false);
+  /** Mood row id for the journal modal — from the save response, not only `userMood` (avoids stale state after `fetchMood`). */
+  const [journalMoodId, setJournalMoodId] = useState<string | null>(null);
   const [existingJournal, setExistingJournal] = useState<MoodJournalRow | null>(null);
 
   // Fetch recent mood on mount
@@ -58,11 +60,21 @@ export default function MoodTracker() {
       const saved = await upsertMood({ id: userMood?.id, userId: user.id, mood: inputMood, sameDay });
       await fetchMood();
 
-      // Look up any existing journal for today's mood row
-      const moodRowId = saved?.id ?? userMood?.id;
+      const moodRowId = saved?.id ?? userMood?.id ?? null;
+      setJournalMoodId(moodRowId);
+
+      // Journal lookup uses the same Supabase + RLS path as moods; if policies differ, this can fail while mood save succeeds.
       if (moodRowId) {
-        const journal = await getJournalByMoodId(moodRowId);
-        setExistingJournal(journal);
+        try {
+          const journal = await getJournalByMoodId(moodRowId);
+          setExistingJournal(journal);
+        } catch (journalErr) {
+          console.warn(
+            "Could not load mood journal (align mood_journals RLS with moods — same user_id predicate on SELECT):",
+            journalErr
+          );
+          setExistingJournal(null);
+        }
       } else {
         setExistingJournal(null);
       }
@@ -148,12 +160,12 @@ export default function MoodTracker() {
         </div>
       </div>
 
-      {userMood?.id && (
+      {journalMoodId && (
         <MoodJournalModal
           isOpen={journalModalOpen}
           onClose={() => setJournalModalOpen(false)}
           mood={mood}
-          moodId={userMood.id}
+          moodId={journalMoodId}
           userId={user?.id ?? ""}
           existingJournal={existingJournal}
           onSaved={(journal) => setExistingJournal(journal)}

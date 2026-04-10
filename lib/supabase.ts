@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+/**
+ * Default export is the browser client. Server bundles replace this module with
+ * `lib/supabase-server.ts` via webpack alias in `next.config.ts` so API routes
+ * rate-limit by IP; the client bundle rate-limits per browser tab.
+ */
+export { supabase } from "./supabase-browser"

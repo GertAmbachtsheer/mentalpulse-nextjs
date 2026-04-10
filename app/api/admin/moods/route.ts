@@ -1,7 +1,7 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { createServiceRoleSupabase } from "@/lib/supabase-service-role";
 
 const PAGE_SIZE = 20;
 
@@ -44,9 +44,7 @@ export async function GET(request: Request) {
 
     // Service role key bypasses RLS; fall back to anon client if key is not configured
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const db = serviceKey
-      ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey)
-      : supabase;
+    const db = serviceKey ? createServiceRoleSupabase() : supabase;
 
     // Get total user count separately to avoid count: "exact" compatibility issues
     const { count, error: countError } = await db

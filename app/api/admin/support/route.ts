@@ -1,12 +1,12 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleSupabase } from "@/lib/supabase-service-role";
 
 function getDb() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (serviceKey) {
-    return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
+    return createServiceRoleSupabase();
   }
   return supabase;
 }
@@ -29,7 +29,7 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await getDb()
       .from("support")
       .select("*")
       .order("sort_order", { ascending: true });

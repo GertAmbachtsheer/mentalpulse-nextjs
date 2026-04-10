@@ -51,7 +51,7 @@ export default function MoodJournalModal({
   if (!isOpen) return null;
 
   async function handleSave() {
-    if (!content.trim()) return;
+    if (!content.trim() || !userId) return;
     setSaving(true);
     try {
       const saved = await upsertMoodJournal({

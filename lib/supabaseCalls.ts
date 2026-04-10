@@ -1,5 +1,16 @@
 import { supabase } from './supabase'
 
+/**
+ * `moods` and `mood_journals` both use the browser Supabase client (Clerk JWT via
+ * ClerkSupabaseBridge). RLS on `public.mood_journals` must use the **same** `user_id`
+ * rules as `public.moods` for every command (SELECT / INSERT / UPDATE / DELETE).
+ *
+ * If the dashboard shows `user_id = (uid())::text`, that is `auth.uid()` cast to text
+ * (native Supabase Auth). With **Clerk** third-party JWTs, `auth.uid()` is not the
+ * Clerk id — use the same expression you already use on `moods`, typically
+ * `user_id = (auth.jwt() ->> 'sub')`, on both tables.
+ */
+
 // ──────────────────────────────────────────────
 // Moods
 // ──────────────────────────────────────────────
@@ -89,6 +100,7 @@ export async function getJournalByMoodId(moodId: string) {
   return data
 }
 
+/** Same client + RLS contract as `upsertMood` (see module comment above). */
 export async function upsertMoodJournal({
   id,
   userId,
@@ -110,16 +122,16 @@ export async function upsertMoodJournal({
 
     if (error) throw error
     return data
-  } else {
-    const { data, error } = await supabase
-      .from('mood_journals')
-      .insert({ user_id: userId, mood_id: moodId, content })
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
   }
+
+  const { data, error } = await supabase
+    .from('mood_journals')
+    .insert({ user_id: userId, mood_id: moodId, content })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
 }
 
 // ──────────────────────────────────────────────
