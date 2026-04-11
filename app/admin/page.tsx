@@ -41,75 +41,55 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (activeSection !== "dashboard" && activeSection !== "alerts") return;
-    if (alertsLoaded || alertsLoading) return;
 
-    const loadAlerts = async () => {
-      try {
+    let cancelled = false;
+
+    const loadAlerts = async (silent: boolean) => {
+      if (!silent) {
         setAlertsLoading(true);
         setAlertsError("");
+      }
+      try {
         const res = await fetch("/api/admin/alerts");
+        if (cancelled) return;
+
         if (res.status === 401 || res.status === 403) {
           router.replace("/admin/login");
           return;
         }
+
         if (!res.ok) {
           setAlertsError("Failed to load alerts.");
-          setAlertsLoading(false);
-          setAlertsLoaded(true);
           return;
         }
+
         const data = await res.json();
+        if (cancelled) return;
+
         setAlerts(data.alerts ?? []);
-        setAlertsLoading(false);
-        setAlertsLoaded(true);
+        setAlertsError("");
       } catch {
+        if (cancelled) return;
         setAlertsError("Something went wrong while loading alerts.");
-        setAlertsLoading(false);
-        setAlertsLoaded(true);
+      } finally {
+        if (!silent) {
+          setAlertsLoading(false);
+          if (!cancelled) setAlertsLoaded(true);
+        }
       }
     };
 
-    loadAlerts();
-  }, [activeSection, alertsLoaded, alertsLoading, router]);
+    void loadAlerts(alertsLoaded);
 
-  // SSE subscription for real-time alert updates
-  useEffect(() => {
-    const es = new EventSource("/api/admin/alerts/stream");
+    const intervalId = window.setInterval(() => {
+      void loadAlerts(true);
+    }, 2000);
 
-    es.addEventListener("alert:triggered", (e) => {
-      const newAlert: PanicAlert = JSON.parse(e.data);
-      setAlerts((prev) => {
-        const exists = prev.some((a) => a.id === newAlert.id);
-        return exists ? prev : [newAlert, ...prev];
-      });
-    });
-
-    es.addEventListener("alert:cancelled", (e) => {
-      const { alertId } = JSON.parse(e.data);
-      setAlerts((prev) =>
-        prev.map((a) => (a.id === alertId ? { ...a, active: false } : a))
-      );
-    });
-
-    es.addEventListener("alert:responded", (e) => {
-      const patch = JSON.parse(e.data);
-      setAlerts((prev) =>
-        prev.map((a) =>
-          a.id === patch.alertId
-            ? {
-                ...a,
-                active: false,
-                respondee: patch.respondee,
-                respondee_first_name: patch.respondee_first_name,
-                respondee_last_name: patch.respondee_last_name,
-              }
-            : a
-        )
-      );
-    });
-
-    return () => es.close();
-  }, []);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [activeSection, alertsLoaded, router]);
 
   const handleOpenLocation = (alert: PanicAlert) => {
     setSelectedAlert(alert);
