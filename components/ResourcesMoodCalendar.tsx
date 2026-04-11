@@ -140,9 +140,8 @@ export function ResourcesMoodCalendar() {
     (year === today.getFullYear() && month < today.getMonth());
 
   return (
-    <section className="mx-4 mb-2 px-4 py-6">
-      <h3 className="text-gray-900 dark:text-gray-100 text-xl font-bold mb-4 pl-1">Mood History</h3>
-      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-transparent dark:border-gray-800">
+    <section className="px-4 py-2">
+      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-gray-800">
         
         {/* Calendar Header */}
         <div className="flex items-center justify-between mb-6">

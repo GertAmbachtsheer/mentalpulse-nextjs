@@ -145,8 +145,9 @@ export function ResourcesMoodChart() {
   };
 
   return (
-    <section className="mx-4 mt-2 px-4 py-6">
-      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-transparent dark:border-gray-800">
+    <section className="px-4 py-2">
+      <h3 className="text-gray-900 dark:text-gray-100 text-xl font-bold mb-4 pl-1">Mood History</h3>
+      <div className="bg-white dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-gray-800">
         <div className="flex justify-between items-start mb-6">
           <div className="flex flex-col gap-1">
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Weekly Overview</p>

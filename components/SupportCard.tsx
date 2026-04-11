@@ -32,21 +32,21 @@ export default function SupportCard() {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-text-main dark:text-white">Support the Devs</h3>
+        <h3 className="text-lg font-bold text-text-main dark:text-white">Support Us</h3>
         <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide">Thank you</span>
       </div>
-      <div className="bg-white dark:bg-surface-dark rounded-3xl p-5 shadow-soft">
+      <div className="bg-white dark:bg-surface-dark rounded-3xl p-4 shadow-soft">
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">If this app helps you, consider buying us a coffee to keep the servers running!</p>
         
         <TabGroup className="w-full">
           <TabList className="flex justify-around rounded-xl bg-slate-50 dark:bg-slate-800 p-1 mb-4">
-            <Tab className="w-full text-center rounded-lg data-[selected]:bg-white data-[selected]:text-primary data-[selected]:shadow-sm data-[selected]:font-bold text-sm text-slate-500 font-medium p-2 cursor-pointer transition-all focus:outline-none">Monthly</Tab>
-            <Tab className="w-full text-center rounded-lg data-[selected]:bg-white data-[selected]:text-primary data-[selected]:shadow-sm data-[selected]:font-bold text-sm text-slate-500 font-medium p-2 cursor-pointer transition-all focus:outline-none">One-Time</Tab>
+            <Tab className="w-full text-center rounded-lg data-selected:bg-white data-selected:text-primary data-selected:shadow-sm data-selected:font-bold text-sm text-slate-500 font-medium p-2 cursor-pointer transition-all focus:outline-none">Monthly</Tab>
+            <Tab className="w-full text-center rounded-lg data-selected:bg-white data-selected:text-primary data-selected:shadow-sm data-selected:font-bold text-sm text-slate-500 font-medium p-2 cursor-pointer transition-all focus:outline-none">One-Time</Tab>
           </TabList>
           
           <TabPanels>
             <TabPanel>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {support?.filter((item: any) => item.type === "monthly")?.map((item: any) => (
                   <button 
                     key={item.id} 
@@ -65,7 +65,7 @@ export default function SupportCard() {
             
             <TabPanel>
               <div className="flex flex-col gap-3">
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {support?.filter((item: any) => item.type === "once-off")?.map((item: any) => (
                     <button 
                       key={item.id} 

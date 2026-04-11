@@ -106,7 +106,6 @@ export default function PanicButton() {
     return (
         <section className="mb-6">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-text-main dark:text-white">Emergency</h3>
                 {activeAlert && (
                     <span className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide flex items-center gap-1 animate-pulse">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Live
@@ -133,8 +132,8 @@ export default function PanicButton() {
                         className={`
                             relative w-48 h-48 rounded-full
                             ${activeAlert
-                                ? 'bg-gradient-to-br from-red-600 via-red-500 to-red-600 focus:ring-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
-                                : 'bg-gradient-to-br from-orange-500 via-orange-400 to-orange-500 focus:ring-orange-400 shadow-[0_10px_30px_rgba(249,115,22,0.3)]'
+                                ? 'bg-linear-to-br from-red-600 via-red-500 to-red-600 focus:ring-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
+                                : 'bg-linear-to-br from-orange-500 via-orange-400 to-orange-500 focus:ring-orange-400 shadow-[0_10px_30px_rgba(249,115,22,0.3)]'
                             }
                             transform transition-all duration-300 ease-out
                             hover:scale-105
@@ -165,7 +164,7 @@ export default function PanicButton() {
                             </div>
                         </div>
 
-                        <div className="absolute inset-[3px] rounded-full border top-0 bg-gradient-to-b from-white/30 to-transparent pointer-events-none opacity-50 mix-blend-overlay"></div>
+                        <div className="absolute inset-[3px] rounded-full border top-0 bg-linear-to-b from-white/30 to-transparent pointer-events-none opacity-50 mix-blend-overlay"></div>
                     </button>
                 </div>
 

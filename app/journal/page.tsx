@@ -99,7 +99,7 @@ export default function JournalPage() {
         </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-4 py-4 pb-28 no-scrollbar space-y-3">
+        <main className="flex-1 overflow-y-auto px-4 py-4 pb-28 no-scrollbar space-y-4 bg-slate-50/80 dark:bg-transparent">
           {loading && (
             <div className="flex justify-center py-12 text-slate-400 text-sm">
               Loading...
@@ -124,7 +124,7 @@ export default function JournalPage() {
               <button
                 key={entry.id}
                 onClick={() => setSelected(entry)}
-                className={`w-full text-left rounded-3xl p-5 ${colors.bg} border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-all active:scale-[0.98]`}
+                className="w-full mb-4 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800"
               >
                 {/* Top row */}
                 <div className="flex items-center justify-between mb-3">
@@ -140,7 +140,7 @@ export default function JournalPage() {
                 </div>
 
                 {/* Content preview */}
-                <p className="text-sm text-text-main dark:text-white leading-relaxed line-clamp-3">
+                <p className="text-sm text-left text-text-main dark:text-white leading-relaxed line-clamp-3">
                   {entry.content}
                 </p>
 

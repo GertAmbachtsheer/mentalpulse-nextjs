@@ -13,6 +13,9 @@ import { useLocationStore } from "@/store/locationStore";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import AuthGuard from "@/components/AuthGuard";
+import { ResourcesMoodChart } from "@/components/ResourcesMoodChart";
+import { ResourcesMoodCalendar } from "@/components/ResourcesMoodCalendar";
+import { ResourcesInsights } from "@/components/ResourcesInsights";
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -135,6 +138,10 @@ export default function ProfilePage() {
             </div>
 
             <ProfileLocationToggleCard />
+
+            <ResourcesMoodChart />
+            <ResourcesMoodCalendar />
+            <ResourcesInsights />
 
             <div className="mx-4 mt-6 mb-8 text-center pt-2">
               <SignOutButton>
