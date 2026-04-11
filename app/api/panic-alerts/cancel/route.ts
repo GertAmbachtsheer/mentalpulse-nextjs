@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dismissPanicAlert, getPanicAlertById } from '@/lib/supabaseCalls';
+import { broadcastAlertEvent } from '@/lib/alertBroadcast';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,6 +27,8 @@ export async function POST(req: NextRequest) {
 
     // 2. Dismiss the alert in DB
     await dismissPanicAlert(alertId);
+
+    broadcastAlertEvent('alert:cancelled', { alertId });
 
     return NextResponse.json({ success: true });
   } catch (error) {
