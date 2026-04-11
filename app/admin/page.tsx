@@ -10,6 +10,11 @@ import { AdminNotificationsSection } from "@/components/admin/AdminNotifications
 import { AdminDashboardSection } from "@/components/admin/AdminDashboardSection";
 import { AlertLocationModal } from "@/components/admin/AlertLocationModal";
 import { AdminSupportSection } from "@/components/admin/AdminSupportSection";
+import { supabaseRealtimeAnon } from "@/lib/supabase-browser-realtime-anon";
+import {
+  PANIC_ALERTS_POSTGRES_CHANNEL,
+  panicRowToAlert,
+} from "@/lib/panicAlertsRealtime";
 
 type PanicAlert = {
   id: string;
@@ -72,43 +77,79 @@ export default function AdminDashboardPage() {
     loadAlerts();
   }, [activeSection, alertsLoaded, alertsLoading, router]);
 
-  // SSE subscription for real-time alert updates
+  // Supabase Realtime: DB changes on `panic_alerts` (add table to `supabase_realtime` publication — see sql/enable_panic_alerts_realtime.sql).
   useEffect(() => {
-    const es = new EventSource("/api/admin/alerts/stream");
-
-    es.addEventListener("alert:triggered", (e) => {
-      const newAlert: PanicAlert = JSON.parse(e.data);
-      setAlerts((prev) => {
-        const exists = prev.some((a) => a.id === newAlert.id);
-        return exists ? prev : [newAlert, ...prev];
-      });
+    const channel = supabaseRealtimeAnon.channel(PANIC_ALERTS_POSTGRES_CHANNEL, {
+      config: { private: false },
     });
 
-    es.addEventListener("alert:cancelled", (e) => {
-      const { alertId } = JSON.parse(e.data);
-      setAlerts((prev) =>
-        prev.map((a) => (a.id === alertId ? { ...a, active: false } : a))
-      );
-    });
+    channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "panic_alerts" },
+      (payload) => {
+        const errs = (payload as { errors?: unknown[] }).errors;
+        if (Array.isArray(errs) && errs.length > 0) {
+          console.error("[panic_alerts realtime]", errs);
+          return;
+        }
 
-    es.addEventListener("alert:responded", (e) => {
-      const patch = JSON.parse(e.data);
-      setAlerts((prev) =>
-        prev.map((a) =>
-          a.id === patch.alertId
-            ? {
-                ...a,
-                active: false,
-                respondee: patch.respondee,
-                respondee_first_name: patch.respondee_first_name,
-                respondee_last_name: patch.respondee_last_name,
+        const eventType = (payload as { eventType: string }).eventType;
+
+        if (eventType === "INSERT") {
+          const row = (payload as { new: Record<string, unknown> }).new;
+          const incoming = panicRowToAlert(row) as PanicAlert;
+          setAlerts((prev) =>
+            prev.some((a) => a.id === incoming.id) ? prev : [incoming, ...prev]
+          );
+          return;
+        }
+
+        if (eventType === "UPDATE") {
+          const row = (payload as { new: Record<string, unknown> }).new;
+          setAlerts((prev) => {
+            const id = String(row.id);
+            const existing = prev.find((a) => a.id === id);
+            const merged = panicRowToAlert(row) as PanicAlert;
+            if (existing) {
+              merged.user_first_name = existing.user_first_name;
+              merged.user_last_name = existing.user_last_name;
+              merged.user_contact_number = existing.user_contact_number;
+              if (String(row.respondee ?? "") === String(existing.respondee ?? "")) {
+                merged.respondee_first_name = existing.respondee_first_name;
+                merged.respondee_last_name = existing.respondee_last_name;
               }
-            : a
-        )
-      );
-    });
+            }
+            return prev.some((a) => a.id === id)
+              ? prev.map((a) => (a.id === id ? merged : a))
+              : [merged, ...prev];
+          });
+          return;
+        }
 
-    return () => es.close();
+        if (eventType === "DELETE") {
+          const oldRow = (payload as { old: Record<string, unknown> }).old;
+          const id = String(oldRow.id);
+          setAlerts((prev) => prev.filter((a) => a.id !== id));
+        }
+      }
+    );
+
+    channel.subscribe(
+      (status, err) => {
+        if (status === "SUBSCRIBED") return;
+        if (status === "CLOSED") return;
+        const hint =
+          status === "TIMED_OUT"
+            ? "Join exceeded timeout — client uses 60s now; if this persists, check Realtime logs and network."
+            : "CHANNEL_ERROR: see sql/enable_panic_alerts_realtime.sql and RLS SELECT for anon on panic_alerts.";
+        console.error("[panic_alerts realtime] status:", status, err ?? hint);
+      },
+      60_000
+    );
+
+    return () => {
+      void supabaseRealtimeAnon.removeChannel(channel);
+    };
   }, []);
 
   const handleOpenLocation = (alert: PanicAlert) => {

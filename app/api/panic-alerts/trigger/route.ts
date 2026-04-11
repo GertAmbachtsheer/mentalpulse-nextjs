@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
-import { triggerPanicAlert, getAllPushSubscriptions, deletePushSubscriptionById } from '@/lib/supabaseCalls';
 import { supabase } from '@/lib/supabase';
-import { broadcastAlertEvent } from '@/lib/alertBroadcast';
+import { triggerPanicAlert, getAllPushSubscriptions, deletePushSubscriptionById } from '@/lib/supabaseCalls';
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT!,
@@ -25,32 +24,7 @@ export async function POST(req: NextRequest) {
     // 1. Create the panic alert in Supabase
     const alertId = await triggerPanicAlert({ userId, latitude, longitude });
 
-    // 2. Enrich with user name and broadcast to admin SSE clients
-    try {
-      const { data: alertRow } = await supabase
-        .from('panic_alerts')
-        .select('*')
-        .eq('id', alertId)
-        .single();
-
-      const { data: userRow } = await supabase
-        .from('users')
-        .select('first_name, last_name')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      broadcastAlertEvent('alert:triggered', {
-        ...alertRow,
-        user_first_name: userRow?.first_name ?? null,
-        user_last_name: userRow?.last_name ?? null,
-        respondee_first_name: null,
-        respondee_last_name: null,
-      });
-    } catch (broadcastErr) {
-      console.error('[Panic Trigger] Broadcast error:', broadcastErr);
-    }
-
-    // 3. Send push notifications to all users except the one who triggered the alert
+    // 2. Send push notifications to all users except the one who triggered the alert
     try {
       const subscriptions = await getAllPushSubscriptions();
       const others = subscriptions.filter((row) => row.user_id !== userId);
