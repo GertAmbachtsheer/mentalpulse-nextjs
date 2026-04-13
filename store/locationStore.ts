@@ -53,6 +53,23 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     return false;
   }
 
+  let applicationServerKey: Uint8Array;
+  try {
+    applicationServerKey = urlBase64ToUint8Array(vapidKey);
+  } catch {
+    console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not valid base64url');
+    return false;
+  }
+  // Uncompressed P-256 SPKI / raw public key from web-push is 65 bytes (0x04 || x || y)
+  if (applicationServerKey.length !== 65) {
+    console.error(
+      '[Push] VAPID public key decodes to wrong length (expected 65 bytes, got',
+      applicationServerKey.length,
+      '). Check env for quotes, newlines, or a truncated value.'
+    );
+    return false;
+  }
+
   const existing = await navigator.serviceWorker.getRegistration();
   if (!existing) {
     console.error('[Push] No service worker registered');
@@ -67,7 +84,7 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer.slice(0) as ArrayBuffer,
+    applicationServerKey: applicationServerKey.buffer as BufferSource,
   });
 
   const res = await fetch('/api/push/subscribe', {
