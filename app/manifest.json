@@ -1,6 +1,7 @@
 {
   "name": "Mental Pulse",
   "short_name": "Mental Pulse",
+  "gcm_sender_id": "103953800507",
   "icons": [
     {
       "src": "/icon512_maskable.png",
