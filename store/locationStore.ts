@@ -85,22 +85,27 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     return false;
   }
 
-  let applicationServerKey: Uint8Array;
+  let keyBytes: Uint8Array;
   try {
-    applicationServerKey = urlBase64ToUint8Array(vapidKey);
+    keyBytes = urlBase64ToUint8Array(vapidKey);
   } catch {
     console.error('[Push] VAPID public key is not valid base64url');
     return false;
   }
   // Uncompressed P-256 SPKI / raw public key from web-push is 65 bytes (0x04 || x || y)
-  if (applicationServerKey.length !== 65) {
+  if (keyBytes.length !== 65) {
     console.error(
       '[Push] VAPID public key decodes to wrong length (expected 65 bytes, got',
-      applicationServerKey.length,
+      keyBytes.length,
       '). Check env for quotes, newlines, or a truncated value.'
     );
     return false;
   }
+  // Extract a plain ArrayBuffer (not ArrayBufferLike) — required by pushManager.subscribe()
+  const applicationServerKey = keyBytes.buffer.slice(
+    keyBytes.byteOffset,
+    keyBytes.byteOffset + keyBytes.byteLength
+  ) as ArrayBuffer;
 
   const registration = await navigator.serviceWorker.ready;
   try {
@@ -146,11 +151,7 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     // A mismatch (e.g. after VAPID key rotation) causes Chrome to throw
     // "AbortError: Registration failed - push service error" on the next subscribe() call.
     const existingKey = existingSub.options?.applicationServerKey;
-    const keyBuffer = applicationServerKey.buffer.slice(
-      applicationServerKey.byteOffset,
-      applicationServerKey.byteOffset + applicationServerKey.byteLength
-    ) as ArrayBuffer;
-    const keysMatch = existingKey ? buffersEqual(existingKey, keyBuffer) : false;
+    const keysMatch = existingKey ? buffersEqual(existingKey, applicationServerKey) : false;
 
     if (keysMatch) {
       const synced = await savePushSubscriptionToServer(userId, existingSub);
