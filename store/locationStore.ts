@@ -41,6 +41,19 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray
 }
 
+async function savePushSubscriptionToServer(userId: string, subscription: PushSubscription): Promise<boolean> {
+  const res = await fetch('/api/push/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, subscription: subscription.toJSON() }),
+  });
+  if (!res.ok) {
+    console.error('[Push] Subscribe API failed:', await res.text());
+    return false;
+  }
+  return true;
+}
+
 async function registerPushSubscription(userId: string): Promise<boolean> {
   if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) return false;
 
@@ -90,28 +103,35 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
 
   const registration = await navigator.serviceWorker.ready;
 
-  // Unsubscribe from any stale subscription before creating a new one
   const existingSub = await registration.pushManager.getSubscription();
-  if (existingSub) await existingSub.unsubscribe();
-
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    // DOM typings expect ArrayBuffer-backed BufferSource; runtime accepts Uint8Array.
-    applicationServerKey: applicationServerKey as BufferSource,
-  });
-
-  const res = await fetch('/api/push/subscribe', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, subscription: subscription.toJSON() }),
-  });
-
-  if (!res.ok) {
-    console.error('[Push] Subscribe API failed:', await res.text());
-    return false;
+  if (existingSub) {
+    const synced = await savePushSubscriptionToServer(userId, existingSub);
+    if (synced) return true;
+    try {
+      await existingSub.unsubscribe();
+    } catch {
+      /* ignore */
+    }
   }
 
-  return true;
+  const keyMaterial = applicationServerKey as BufferSource;
+  let subscription: PushSubscription;
+  try {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyMaterial,
+    });
+  } catch (firstErr) {
+    const isAbort = firstErr instanceof DOMException && firstErr.name === 'AbortError';
+    if (!isAbort) throw firstErr;
+    await new Promise((r) => setTimeout(r, 800));
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: keyMaterial,
+    });
+  }
+
+  return savePushSubscriptionToServer(userId, subscription);
 }
 
 async function unregisterPushSubscription(userId: string): Promise<void> {
