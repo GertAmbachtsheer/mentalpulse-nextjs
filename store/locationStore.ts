@@ -96,8 +96,32 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   }
 
   const registration = await navigator.serviceWorker.ready;
+  try {
+    await registration.update();
+  } catch {
+    /* ignore */
+  }
   console.log('[Push] SW scope:', registration.scope);
   console.log('[Push] SW scriptURL:', registration.active?.scriptURL ?? registration.waiting?.scriptURL ?? registration.installing?.scriptURL);
+
+  // Ensure the current page is controlled by a SW before subscribing.
+  // In some update/claim edge-cases, ready resolves but controller isn't set yet.
+  if (!navigator.serviceWorker.controller) {
+    console.warn('[Push] No SW controller yet; waiting for controllerchange');
+    await new Promise<void>((resolve) => {
+      const onChange = () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', onChange);
+        resolve();
+      };
+      navigator.serviceWorker.addEventListener('controllerchange', onChange);
+      // safety timeout
+      setTimeout(() => {
+        navigator.serviceWorker.removeEventListener('controllerchange', onChange);
+        resolve();
+      }, 2000);
+    });
+    console.log('[Push] SW controller now:', !!navigator.serviceWorker.controller);
+  }
 
   // Best-effort: detect if this network blocks Google FCM endpoints.
   // no-cors avoids CORS errors; a network block typically throws instead of returning an opaque response.
