@@ -47,9 +47,21 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return false;
 
-  const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const keyRes = await fetch(`/api/push/public-key?k=${Date.now()}`, { cache: 'no-store' });
+  if (!keyRes.ok) {
+    console.error('[Push] Could not load VAPID public key from server:', keyRes.status, await keyRes.text());
+    return false;
+  }
+  let vapidKey: string;
+  try {
+    const body = (await keyRes.json()) as { publicKey?: string };
+    vapidKey = body.publicKey?.trim() ?? '';
+  } catch {
+    console.error('[Push] Invalid JSON from /api/push/public-key');
+    return false;
+  }
   if (!vapidKey) {
-    console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set');
+    console.error('[Push] Server returned empty publicKey');
     return false;
   }
 
@@ -57,7 +69,7 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   try {
     applicationServerKey = urlBase64ToUint8Array(vapidKey);
   } catch {
-    console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not valid base64url');
+    console.error('[Push] VAPID public key is not valid base64url');
     return false;
   }
   // Uncompressed P-256 SPKI / raw public key from web-push is 65 bytes (0x04 || x || y)
@@ -84,7 +96,8 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: applicationServerKey.buffer as BufferSource,
+    // DOM typings expect ArrayBuffer-backed BufferSource; runtime accepts Uint8Array.
+    applicationServerKey: applicationServerKey as BufferSource,
   });
 
   const res = await fetch('/api/push/subscribe', {
