@@ -1,6 +1,5 @@
 "use client";
 import AuthGuard from "@/components/AuthGuard";
-import CustomUserButton from "@/components/CustomUserButton";
 import { Suspense } from "react";
 import Loading from "../loading";
 import { Toaster } from "@/components/ui/sonner";
@@ -31,11 +30,29 @@ export default function Resources() {
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto pb-24 hide-scrollbar">
             <div className="flex-1 m-2 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800 mb-4">
-              <Link href="https://fathersofvalor.co.za" target="_blank" className="flex items-center gap-4">
-                <div><Image src="/fov-logo.png" alt="Resource 1" width={150} height={150} /></div>
-                <div>
+              <Link href="https://fathersofvalor.co.za" target="_blank" className="flex items-center gap-2">
+                <div className="w-full max-w-25"><Image src="/fov-logo.jpeg" alt="Resource 1" width={100} height={100} /></div>
+                <div className="border-l border-l-gray-400 pl-2 py-2">
                   <h3 className="text-text-main dark:text-white text-lg font-bold">Fathers of Valor</h3>
                   <p className="text-text-sub dark:text-text-sub text-sm">One Man Can Change a Generation. Become part of a movement that equips men to lead with purpose, integrity, and faith.</p>
+                </div>
+              </Link>
+            </div>
+            <div className="flex-1 m-2 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800 mb-4">
+              <Link href="https://twnaf.com/" target="_blank" className="flex items-center gap-2">
+                <div className="w-full max-w-25"><Image src="/twnaf.jpg" alt="Resource 1" width={100} height={100} /></div>
+                <div className="border-l border-l-gray-400 pl-2 py-2">
+                  <h3 className="text-text-main dark:text-white text-lg font-bold">The World Needs a Father</h3>
+                  <p className="text-text-sub dark:text-text-sub text-sm">EQUIPPING FATHERS | BUILDING HEALTHY FAMILIES | TRANSFORMING COMMUNITIES | HEALING THE WORLD</p>
+                </div>
+              </Link>
+            </div>
+            <div className="flex-1 m-2 bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-gray-800 mb-4">
+              <Link href="https://zeal.org.za/" target="_blank" className="flex items-center gap-2">
+                <div className="w-full max-w-25"><Image src="/zeal.png" alt="Resource 1" width={100} height={100} content="cover" /></div>
+                <div className="border-l border-l-gray-400 pl-2 py-2">
+                  <h3 className="text-text-main dark:text-white text-lg font-bold">Zeal</h3>
+                  <p className="text-text-sub dark:text-text-sub text-sm">Adventure. Brotherhood. Courage.</p>
                 </div>
               </Link>
             </div>
