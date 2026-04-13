@@ -144,6 +144,10 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   }
 
   const keyMaterial = applicationServerKey as BufferSource;
+  const keyBuffer = applicationServerKey.buffer.slice(
+    applicationServerKey.byteOffset,
+    applicationServerKey.byteOffset + applicationServerKey.byteLength
+  ) as ArrayBuffer;
   let subscription: PushSubscription;
   try {
     try {
@@ -161,10 +165,16 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     console.error('[Push] subscribe() failed:', firstErr);
     if (!isAbort) throw firstErr;
     await new Promise((r) => setTimeout(r, 800));
-    subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: keyMaterial,
-    });
+    try {
+      // Fallback: some browsers behave better with an ArrayBuffer rather than a view.
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: keyBuffer,
+      });
+    } catch (secondErr) {
+      console.error('[Push] subscribe() retry failed:', secondErr);
+      throw secondErr;
+    }
   }
 
   return savePushSubscriptionToServer(userId, subscription);
