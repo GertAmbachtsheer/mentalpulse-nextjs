@@ -126,7 +126,8 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   // Best-effort: detect if this network blocks Google FCM endpoints.
   // no-cors avoids CORS errors; a network block typically throws instead of returning an opaque response.
   try {
-    await fetch('https://fcm.googleapis.com/fcm/send', { mode: 'no-cors', cache: 'no-store' });
+    // Hit the origin (not /fcm/send) to avoid noisy 404s.
+    await fetch('https://fcm.googleapis.com/', { mode: 'no-cors', cache: 'no-store' });
     console.log('[Push] FCM probe: reachable (opaque response expected)');
   } catch (e) {
     console.warn('[Push] FCM probe: failed (possible network/adblock/corporate firewall blocking googleapis)', e);
@@ -173,7 +174,16 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
       });
     } catch (secondErr) {
       console.error('[Push] subscribe() retry failed:', secondErr);
-      throw secondErr;
+      try {
+        // Final fallback: some Chromium builds accept the base64url string directly.
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: vapidKey as unknown as BufferSource,
+        });
+      } catch (thirdErr) {
+        console.error('[Push] subscribe() final retry failed:', thirdErr);
+        throw thirdErr;
+      }
     }
   }
 
