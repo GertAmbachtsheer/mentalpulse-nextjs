@@ -30,6 +30,13 @@ function saveToStorage(userId: string, data: { isLocationEnabled: boolean; notif
   } catch {}
 }
 
+function buffersEqual(a: ArrayBuffer, b: ArrayBuffer): boolean {
+  if (a.byteLength !== b.byteLength) return false;
+  const va = new Uint8Array(a);
+  const vb = new Uint8Array(b);
+  return va.every((byte, i) => byte === vb[i]);
+}
+
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
@@ -135,8 +142,23 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
 
   const existingSub = await registration.pushManager.getSubscription();
   if (existingSub) {
-    const synced = await savePushSubscriptionToServer(userId, existingSub);
-    if (synced) return true;
+    // Only reuse the existing subscription if it was created with the current VAPID key.
+    // A mismatch (e.g. after VAPID key rotation) causes Chrome to throw
+    // "AbortError: Registration failed - push service error" on the next subscribe() call.
+    const existingKey = existingSub.options?.applicationServerKey;
+    const keyBuffer = applicationServerKey.buffer.slice(
+      applicationServerKey.byteOffset,
+      applicationServerKey.byteOffset + applicationServerKey.byteLength
+    ) as ArrayBuffer;
+    const keysMatch = existingKey ? buffersEqual(existingKey, keyBuffer) : false;
+
+    if (keysMatch) {
+      const synced = await savePushSubscriptionToServer(userId, existingSub);
+      if (synced) return true;
+    } else {
+      console.warn('[Push] Existing subscription has a different VAPID key — unsubscribing to create a fresh one');
+    }
+
     try {
       await existingSub.unsubscribe();
     } catch {
@@ -144,47 +166,15 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     }
   }
 
-  const keyMaterial = applicationServerKey as BufferSource;
-  const keyBuffer = applicationServerKey.buffer.slice(
-    applicationServerKey.byteOffset,
-    applicationServerKey.byteOffset + applicationServerKey.byteLength
-  ) as ArrayBuffer;
   let subscription: PushSubscription;
   try {
-    try {
-      const state = await registration.pushManager.permissionState({ userVisibleOnly: true, applicationServerKey: keyMaterial } as PushSubscriptionOptionsInit);
-      console.log('[Push] permissionState:', state);
-    } catch (e) {
-      console.warn('[Push] permissionState check failed (non-fatal):', e);
-    }
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: keyMaterial,
+      applicationServerKey: applicationServerKey,
     });
-  } catch (firstErr) {
-    const isAbort = firstErr instanceof DOMException && firstErr.name === 'AbortError';
-    console.error('[Push] subscribe() failed:', firstErr);
-    if (!isAbort) throw firstErr;
-    await new Promise((r) => setTimeout(r, 800));
-    try {
-      // Fallback: some browsers behave better with an ArrayBuffer rather than a view.
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: keyBuffer,
-      });
-    } catch (secondErr) {
-      console.error('[Push] subscribe() retry failed:', secondErr);
-      try {
-        // Final fallback: some Chromium builds accept the base64url string directly.
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: vapidKey as unknown as BufferSource,
-        });
-      } catch (thirdErr) {
-        console.error('[Push] subscribe() final retry failed:', thirdErr);
-        throw thirdErr;
-      }
-    }
+  } catch (err) {
+    console.error('[Push] subscribe() failed:', err);
+    throw err;
   }
 
   return savePushSubscriptionToServer(userId, subscription);
