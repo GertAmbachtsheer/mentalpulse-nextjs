@@ -95,13 +95,18 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
     return false;
   }
 
-  const existing = await navigator.serviceWorker.getRegistration();
-  if (!existing) {
-    console.error('[Push] No service worker registered');
-    return false;
-  }
-
   const registration = await navigator.serviceWorker.ready;
+  console.log('[Push] SW scope:', registration.scope);
+  console.log('[Push] SW scriptURL:', registration.active?.scriptURL ?? registration.waiting?.scriptURL ?? registration.installing?.scriptURL);
+
+  // Best-effort: detect if this network blocks Google FCM endpoints.
+  // no-cors avoids CORS errors; a network block typically throws instead of returning an opaque response.
+  try {
+    await fetch('https://fcm.googleapis.com/fcm/send', { mode: 'no-cors', cache: 'no-store' });
+    console.log('[Push] FCM probe: reachable (opaque response expected)');
+  } catch (e) {
+    console.warn('[Push] FCM probe: failed (possible network/adblock/corporate firewall blocking googleapis)', e);
+  }
 
   const existingSub = await registration.pushManager.getSubscription();
   if (existingSub) {
@@ -117,12 +122,19 @@ async function registerPushSubscription(userId: string): Promise<boolean> {
   const keyMaterial = applicationServerKey as BufferSource;
   let subscription: PushSubscription;
   try {
+    try {
+      const state = await registration.pushManager.permissionState({ userVisibleOnly: true, applicationServerKey: keyMaterial } as PushSubscriptionOptionsInit);
+      console.log('[Push] permissionState:', state);
+    } catch (e) {
+      console.warn('[Push] permissionState check failed (non-fatal):', e);
+    }
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: keyMaterial,
     });
   } catch (firstErr) {
     const isAbort = firstErr instanceof DOMException && firstErr.name === 'AbortError';
+    console.error('[Push] subscribe() failed:', firstErr);
     if (!isAbort) throw firstErr;
     await new Promise((r) => setTimeout(r, 800));
     subscription = await registration.pushManager.subscribe({
